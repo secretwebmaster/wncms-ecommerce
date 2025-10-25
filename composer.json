@@ -1,0 +1,31 @@
+{
+    "name": "secretwebmaster/wncms-ecommerce",
+    "description": "E-commerce module for WNCMS, providing products, orders, transactions, payments, subscriptions, and plans management.",
+    "keywords": ["wncms", "laravel", "cms", "ecommerce", "secretwebmaster"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "secretwebmaster",
+            "email": "earnbyshare2016@gmail.com"
+        }
+    ],
+    "require": {
+        "secretwebmaster/wncms-core": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Secretwebmaster\\WncmsEcommerce\\": "src/",
+            "Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Secretwebmaster\\WncmsEcommerce\\Providers\\EcommerceServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
