@@ -7,21 +7,25 @@ use Wncms\Models\BaseModel;
 class PaymentGateway extends BaseModel
 {
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'payment_gateway';
+
     protected $table = 'payment_gateways';
 
     protected $guarded = [];
 
-    protected $casts =[
+    protected $casts = [
         'attributes' => 'array',
     ];
 
     public const ICONS = [
         'fontawesome' => 'fa-solid fa-hand-holding-dollar'
-    ];
-
-    public const ROUTES = [
-        'index',
-        'create',
     ];
 
     public const STATUSES = [
@@ -38,6 +42,12 @@ class PaymentGateway extends BaseModel
     {
         return $this->name;
     }
+
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Methods
+     * ----------------------------------------------------------------------------------------------------
+     */
 
     /**
      * Get a specific parameter value.

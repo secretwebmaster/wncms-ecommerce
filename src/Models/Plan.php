@@ -9,15 +9,19 @@ class Plan extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'plan';
+
     protected $guarded = [];
 
     public const ICONS = [
         'fontawesome' => 'fa-solid fa-money-check'
-    ];
-
-    public const ROUTES = [
-        'index',
-        'create',
     ];
 
     public const STATUSES = [
@@ -25,6 +29,11 @@ class Plan extends BaseModel
         'inactive',
     ];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function subscriptions()
     {
         return $this->hasMany(wncms()->getModelClass('subscription'));
@@ -35,6 +44,12 @@ class Plan extends BaseModel
         return $this->morphMany(wncms()->getModelClass('price'), 'priceable');
     }
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Methods
+     * ----------------------------------------------------------------------------------------------------
+     */
+    
     /**
      * Get the lifetime price for the plan.
      */

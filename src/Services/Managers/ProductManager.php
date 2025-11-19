@@ -10,6 +10,7 @@ class ProductManager extends ModelManager
 {
     protected string $cacheKeyPrefix = 'wncms_ecommerce_product';
     protected string|array $cacheTags = ['products'];
+    protected string $packageKey = 'wncms-ecommerce';
 
     public function getModelClass(): string
     {
@@ -24,11 +25,16 @@ class ProductManager extends ModelManager
         $q = $this->query();
 
         // Filters
+        $this->applyIds($q, 'products.id', $options['ids'] ?? []);
+        $this->applyExcludeIds($q, 'products.id', $options['excluded_ids'] ?? []);
+        $this->applyExcludedTags($q, $options['excluded_tag_ids'] ?? []);
+        $this->applyTagFilter($q, $options['tags'] ?? [], $options['tag_type'] ?? null);
         $this->applyWhereConditions($q, $options['wheres'] ?? []);
         $this->applyStatus($q, 'status', $options['status'] ?? 'active');
         $this->applyKeywordFilter($q, $options['keywords'] ?? null, ['name', 'slug']);
-        $this->applyWebsiteId($q, $options['website_id'] ?? null);
         $this->applyWiths($q, $options['withs'] ?? []);
+        // $this->applyOrdering($q, $options['order'] ?? 'order', $options['sequence'] ?? 'desc', ($options['order'] ?? '') === 'random');
+        $this->applyWebsiteId($q, $options['website_id'] ?? null);
 
         // Ordering
         $this->applyOrdering(

@@ -9,6 +9,15 @@ class Transaction extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'transaction';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -19,17 +28,17 @@ class Transaction extends BaseModel
         'fontawesome' => 'fa-solid fa-money-bill-transfer'
     ];
 
-    public const ROUTES = [
-        'index',
-        'create',
-    ];
-
     public const STATUSES = [
         'completed',
         'refunded',
         'failed',
     ];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function order()
     {
         return $this->belongsTo(wncms()->getModelClass('order'));

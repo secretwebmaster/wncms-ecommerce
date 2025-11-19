@@ -9,6 +9,15 @@ class Credit extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'credit';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -30,7 +39,11 @@ class Credit extends BaseModel
         'balance',
     ];
 
-
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function user()
     {
         return $this->belongsTo(wncms()->getModelClass('user'));

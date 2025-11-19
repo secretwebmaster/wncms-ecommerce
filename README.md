@@ -55,3 +55,9 @@ This will automatically:
 * Permission auto-registration via `wncms:create-model-permission`
 
 ```
+
+## Plan
+
+- Allow product, plan, discount, tag to be taggable
+- Add credit system and allow credit type exchange
+- Add discount system

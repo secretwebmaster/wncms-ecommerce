@@ -30,6 +30,8 @@ return [
     'physical' => '實體',
     'product_name' => '商品名稱',
     'product_detail' => '商品詳情',
+    'product_category' => '商品分類',
+    'product_tag' => '商品標籤',
 
     // Plan
     'plan' => '方案',

@@ -42,11 +42,16 @@ class ProductController extends BackendController
             $product = new $this->modelClass;
         }
 
+        $productTags = wncms()->tag()->getTagifyDropdownItems('product_tag', 'name', 'name', false);
+        $productCategories = wncms()->tag()->getTagifyDropdownItems('product_category', 'name', 'name', false);
+
         return $this->view('wncms-ecommerce::backend.products.create', [
             'page_title' => wncms_model_word('product', 'create'),
             'product' => $product,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,
+            'productTags' => $productTags,
+            'productCategories' => $productCategories,
         ]);
     }
 
@@ -86,6 +91,8 @@ class ProductController extends BackendController
             'variants' => $request->variants ?? [],
         ]);
 
+        $product->syncTagsFromTagify($request->product_categories, 'product_category');
+        $product->syncTagsFromTagify($request->product_tags, 'product_tag');
 
         $this->flush();
 
@@ -101,6 +108,9 @@ class ProductController extends BackendController
         if (!$product) {
             return back()->withMessage(__('wncms::word.model_not_found', ['model_name' => __('wncms::word.' . $this->singular)]));
         }
+        
+        $productTags = wncms()->tag()->getTagifyDropdownItems('product_tag', 'name', 'name', false);
+        $productCategories = wncms()->tag()->getTagifyDropdownItems('product_category', 'name', 'name', false);
 
         // dd($product);
 
@@ -109,6 +119,8 @@ class ProductController extends BackendController
             'product' => $product,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,
+            'productTags' => $productTags,
+            'productCategories' => $productCategories,
         ]);
     }
 
@@ -153,6 +165,9 @@ class ProductController extends BackendController
             'properties' => $request->properties ?? [],
             'variants' => $request->variants ?? [],
         ]);
+
+        $product->syncTagsFromTagify($request->product_categories, 'product_category');
+        $product->syncTagsFromTagify($request->product_tags, 'product_tag');
 
         $this->flush();
 

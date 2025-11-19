@@ -9,6 +9,15 @@ class Discount extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'discount';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -19,11 +28,6 @@ class Discount extends BaseModel
 
     public const ICONS = [
         'fontawesome' => 'fa-solid fa-comments-dollar'
-    ];
-
-    public const ROUTES = [
-        'index',
-        'create',
     ];
 
     public const STATUSES = [

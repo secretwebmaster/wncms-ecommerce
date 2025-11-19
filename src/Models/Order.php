@@ -9,6 +9,15 @@ class Order extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'order';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -20,11 +29,6 @@ class Order extends BaseModel
     ];
 
     public const NAME_KEY = 'user_order';
-
-    public const ROUTES = [
-        'index',
-        'create',
-    ];
 
     public const STATUSES = [
         'pending_payment',
@@ -57,7 +61,12 @@ class Order extends BaseModel
             $model->slug = $slug;
         });
     }
-
+    
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function user()
     {
         return $this->belongsTo(wncms()->getModelClass('user'));

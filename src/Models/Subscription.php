@@ -9,6 +9,15 @@ class Subscription extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'subscription';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -20,17 +29,17 @@ class Subscription extends BaseModel
         'fontawesome' => 'fa-solid fa-arrows-spin'
     ];
 
-    public const ROUTES = [
-        'index',
-        'create',
-    ];
-
     public const STATUSES = [
         'active',
         'expired',
         'cancelled',
     ];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function user()
     {
         return $this->belongsTo(wncms()->getModelClass('user'));

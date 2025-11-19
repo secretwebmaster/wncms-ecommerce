@@ -15,9 +15,9 @@ class CardController extends FrontendController
     public function show()
     {
         return $this->view(
-            "frontend.theme.{$this->theme}.users.card",
+            "frontend.themes.{$this->theme}.users.card",
             [],
-            'wncms::frontend.theme.default.users.card',
+            'wncms::frontend.themes.default.users.card',
         );
     }
 

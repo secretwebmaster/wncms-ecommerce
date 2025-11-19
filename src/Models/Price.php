@@ -9,6 +9,15 @@ class Price extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'price';
+    
     protected $guarded = [];
 
     protected $casts = [
@@ -27,11 +36,13 @@ class Price extends BaseModel
         'fontawesome' => 'fa-solid fa-cube'
     ];
 
-    // public const ROUTES = [
-    //     'index',
-    //     'create',
-    // ];
+    public const ROUTES = [];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function priceable()
     {
         return $this->morphTo();
@@ -42,6 +53,12 @@ class Price extends BaseModel
         return $this->belongsTo(wncms()->getModelClass('plan'));
     }
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Methods
+     * ----------------------------------------------------------------------------------------------------
+     */
+    
     /**
      * Scope for lifetime prices.
      */

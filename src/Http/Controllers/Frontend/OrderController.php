@@ -19,7 +19,7 @@ class OrderController extends FrontendController
         $orders = Order::where('user_id', auth()->id())->latest()->paginate(20);
 
         return $this->view(
-            "frontend.theme.{$this->theme}.orders.index",
+            "frontend.themes.{$this->theme}.orders.index",
             compact('orders'),
             'wncms-ecommerce::frontend.orders.index',
         );
@@ -40,7 +40,7 @@ class OrderController extends FrontendController
         $paymentGateways = PaymentGateway::where('status', 'active')->get();
 
         return $this->view(
-            "frontend.theme.{$this->theme}.orders.show",
+            "frontend.themes.{$this->theme}.orders.show",
             [
                 'order' => $order,
                 'paymentGateways' => $paymentGateways,
@@ -109,7 +109,7 @@ class OrderController extends FrontendController
         }
         
         return $this->view(
-            "frontend.theme.{$this->theme}.orders.success",
+            "frontend.themes.{$this->theme}.orders.success",
             ['order' => $order],
             'wncms-ecommerce::frontend.orders.success',
         );

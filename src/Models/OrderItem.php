@@ -9,6 +9,15 @@ class OrderItem extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'order_item';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -25,7 +34,9 @@ class OrderItem extends BaseModel
     ];
 
     /**
-     * Relations
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
      */
     public function order()
     {

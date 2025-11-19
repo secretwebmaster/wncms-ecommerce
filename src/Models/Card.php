@@ -9,6 +9,15 @@ class Card extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'card';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -21,17 +30,12 @@ class Card extends BaseModel
         'fontawesome' => 'fa-solid fa-credit-card',
     ];
 
-    public const ROUTES = [
-        'index',
-        'create',
-    ];
-
     public const STATUSES = [
         'active',
         'redeemed',
         'expired',
     ];
-    
+
     public const TYPES = [
         'credit',
         'balance',
@@ -39,6 +43,11 @@ class Card extends BaseModel
         'product',
     ];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function user()
     {
         return $this->belongsTo(wncms()->getModelClass('user'));

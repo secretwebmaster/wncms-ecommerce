@@ -28,6 +28,74 @@
         </div>
     </div>
 
+    {{-- product_category --}}
+    <div class="row mb-3">
+        <label class="col-lg-3 col-form-label required fw-bold fs-6">@lang('wncms-ecommerce::word.product_category')</label>
+        <div class="col-lg-9 fv-row">
+            <input id="product_categories" class="form-control form-control-sm p-0" name="product_categories" value="{{ $product->tagsWithType('product_category')->implode('name', ',') }}" />
+        </div>
+
+        <script type="text/javascript">
+            window.addEventListener('DOMContentLoaded', (event) => {
+                //Tagify
+                var input = document.querySelector("#product_categories");
+                var product_categories = @json($productCategories);
+    
+                console.log(product_categories)
+                // Initialize Tagify script on the above inputs
+
+                new Tagify(input, {
+                    whitelist: product_categories,
+                    maxTags: 10,
+                    tagTextProp: 'value',
+                    dropdown: {
+                        maxItems: 20,           // <- mixumum allowed rendered suggestions
+                        classname: "tagify__inline__suggestions", // <- custom classname for this dropdown, so it could be targeted
+                        enabled: 0,             // <- show suggestions on focus
+                        closeOnSelect: false,    // <- do not hide the suggestions dropdown once an item has been selected
+                        originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
+                        mapValueTo: 'name',
+                        searchKeys: ['name','value'],
+                    }
+                });
+            });
+        </script>
+    </div>
+
+    {{-- product_tag --}}
+    <div class="row mb-3">
+        <label class="col-lg-3 col-form-label required fw-bold fs-6">@lang('wncms-ecommerce::word.product_tag')</label>
+        <div class="col-lg-9 fv-row">
+            <input id="product_tags" class="form-control form-control-sm p-0" name="product_tags" value="{{ $product->tagsWithType('product_tag')->implode('name', ',') }}" />
+        </div>
+
+        <script type="text/javascript">
+            window.addEventListener('DOMContentLoaded', (event) => {
+                //Tagify
+                var input = document.querySelector("#product_tags");
+                var product_tags = @json($productTags);
+    
+                console.log(product_tags)
+                // Initialize Tagify script on the above inputs
+
+                new Tagify(input, {
+                    whitelist: product_tags,
+                    maxTags: 10,
+                    tagTextProp: 'value',
+                    dropdown: {
+                        maxItems: 20,           // <- mixumum allowed rendered suggestions
+                        classname: "tagify__inline__suggestions", // <- custom classname for this dropdown, so it could be targeted
+                        enabled: 0,             // <- show suggestions on focus
+                        closeOnSelect: false,    // <- do not hide the suggestions dropdown once an item has been selected
+                        originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
+                        mapValueTo: 'name',
+                        searchKeys: ['name','value'],
+                    }
+                });
+            });
+        </script>
+    </div>
+
     {{-- price --}}
     <div class="row mb-3">
         <label class="col-lg-3 col-form-label fw-bold fs-6" for="price">@lang('wncms::word.price')</label>

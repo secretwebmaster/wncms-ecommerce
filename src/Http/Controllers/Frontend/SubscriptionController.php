@@ -24,7 +24,7 @@ class SubscriptionController extends FrontendController
 
 
         return $this->view(
-            "frontend.theme.{$this->theme}.users.subscriptions",
+            "frontend.themes.{$this->theme}.users.subscriptions",
             [
                 'subscriptions' => $subscriptions,
                 'user' => $user,
@@ -49,7 +49,7 @@ class SubscriptionController extends FrontendController
             ->firstOrFail();
 
         return $this->view(
-            "frontend.theme.{$this->theme}.users.subscriptions.show",
+            "frontend.themes.{$this->theme}.users.subscriptions.show",
             [
                 'subscription' => $subscription,
                 'user' => $user,

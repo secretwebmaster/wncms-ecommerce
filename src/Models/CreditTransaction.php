@@ -9,6 +9,15 @@ class CreditTransaction extends BaseModel
 {
     use HasFactory;
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Propertyies
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public static $packageId = 'wncms-ecommerce';
+
+    public static $modelKey = 'credit_transaction';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -19,11 +28,6 @@ class CreditTransaction extends BaseModel
         'fontawesome' => 'fa-solid fa-money-bill-transfer'
     ];
 
-    public const ROUTES = [
-        'index',
-        'create',
-    ];
-
     public const TRANSACTION_TYPES = [
         'earn',
         'spend',
@@ -32,6 +36,11 @@ class CreditTransaction extends BaseModel
         'adjustment',
     ];
 
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Relationships
+     * ----------------------------------------------------------------------------------------------------
+     */
     public function user()
     {
         return $this->belongsTo(wncms()->getModelClass('user'));
