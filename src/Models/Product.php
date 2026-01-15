@@ -3,11 +3,14 @@
 namespace Secretwebmaster\WncmsEcommerce\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Wncms\Models\BaseModel;
 
-class Product extends BaseModel
+class Product extends BaseModel implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
 
     /**
      * ----------------------------------------------------------------------------------------------------
@@ -47,11 +50,22 @@ class Product extends BaseModel
         'active',
         'inactive',
     ];
-    
+
     public const TYPES = [
         'virtual',
         'physical',
     ];
+
+    /**
+     * ----------------------------------------------------------------------------------------------------
+     * Contracts
+     * ----------------------------------------------------------------------------------------------------
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('product_thumbnail')->singleFile();
+        $this->addMediaCollection('product_content');
+    }
 
     /**
      * ----------------------------------------------------------------------------------------------------
@@ -71,9 +85,16 @@ class Product extends BaseModel
 
     /**
      * ----------------------------------------------------------------------------------------------------
-     * Accessors
+     * Attributes Accessor
      * ----------------------------------------------------------------------------------------------------
      */
+    public function getThumbnailAttribute()
+    {
+        $media = $this->getMedia('product_thumbnail')->first();
+        if ($media) return $media->getUrl();
+        return $this->external_thumbnail;
+    }
+
     public function getTypeLabelAttribute(): string
     {
         return __('wncms-ecommerce::word.' . $this->type); // 商品

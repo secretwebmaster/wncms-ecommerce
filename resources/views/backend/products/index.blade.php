@@ -96,6 +96,7 @@
                                 {{-- Actions --}}
                                 <td>
                                     <a class="btn btn-sm btn-dark fw-bold px-2 py-1" href="{{ route('products.edit', $product) }}">@lang('wncms::word.edit')</a>
+                                    <a class="btn btn-sm btn-info fw-bold px-2 py-1" href="{{ route('products.clone', $product) }}">@lang('wncms::word.clone')</a>
                                     @include('wncms::backend.parts.modal_delete', ['model' => $product, 'route' => route('products.destroy', $product), 'btn_class' => 'px-2 py-1'])
                                 </td>
 

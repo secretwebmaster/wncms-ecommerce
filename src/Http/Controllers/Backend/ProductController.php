@@ -89,7 +89,24 @@ class ProductController extends BackendController
             'is_variable' => $request->is_variable ?? false,
             'properties' => $request->properties ?? [],
             'variants' => $request->variants ?? [],
+            'external_thumbnail' => $request->external_thumbnail,
         ]);
+
+        // Handle thumbnail upload
+        if (!empty($request->product_thumbnail_remove)) {
+            $product->clearMediaCollection('product_thumbnail');
+        }
+
+        if (!empty($request->product_thumbnail_clone_id)) {
+            $mediaToClone = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->product_thumbnail_clone_id);
+            if ($mediaToClone) {
+                $mediaToClone->copy($product, 'product_thumbnail');
+            }
+        }
+
+        if (!empty($request->product_thumbnail)) {
+            $product->addMediaFromRequest('product_thumbnail')->toMediaCollection('product_thumbnail');
+        }
 
         $product->syncTagsFromTagify($request->product_categories, 'product_category');
         $product->syncTagsFromTagify($request->product_tags, 'product_tag');
@@ -164,7 +181,17 @@ class ProductController extends BackendController
             'is_variable' => $request->is_variable ?? false,
             'properties' => $request->properties ?? [],
             'variants' => $request->variants ?? [],
+            'external_thumbnail' => $request->external_thumbnail,
         ]);
+
+        // Handle thumbnail upload
+        if (!empty($request->product_thumbnail_remove)) {
+            $product->clearMediaCollection('product_thumbnail');
+        }
+
+        if (!empty($request->product_thumbnail)) {
+            $product->addMediaFromRequest('product_thumbnail')->toMediaCollection('product_thumbnail');
+        }
 
         $product->syncTagsFromTagify($request->product_categories, 'product_category');
         $product->syncTagsFromTagify($request->product_tags, 'product_tag');
