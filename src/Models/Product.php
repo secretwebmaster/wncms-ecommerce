@@ -99,4 +99,10 @@ class Product extends BaseModel implements HasMedia
     {
         return __('wncms-ecommerce::word.' . $this->type); // 商品
     }
+
+    public function getProperty($key, $fallback = null)
+    {
+        $properties = collect($this->properties);
+        return $properties->where('name', $key)->first()['value'] ?? $fallback;
+    }
 }

@@ -14,7 +14,7 @@ class PaymentGatewayController extends BackendController
         $paymentGateways = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.payment_gateways.index', [
-            'page_title' =>  wncms_model_word('payment_gateway', 'management'),
+            'page_title' =>  wncms()->getModelWord('payment_gateway', 'management'),
             'payment_gateways' => $paymentGateways,
             'statuses' => $this->modelClass::STATUSES,
         ]);
@@ -32,7 +32,7 @@ class PaymentGatewayController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.payment_gateways.create', [
-            'page_title' =>  wncms_model_word('payment_gateway', 'management'),
+            'page_title' =>  wncms()->getModelWord('payment_gateway', 'management'),
             'paymentGateway' => $paymentGateway,
             'statuses' => $this->modelClass::STATUSES,
         ]);
@@ -70,7 +70,7 @@ class PaymentGatewayController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.payment_gateways.edit', [
-            'page_title' =>  wncms_model_word('payment_gateway', 'management'),
+            'page_title' =>  wncms()->getModelWord('payment_gateway', 'management'),
             'paymentGateway' => $paymentGateway,
             'statuses' => $this->modelClass::STATUSES,
         ]);

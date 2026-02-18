@@ -36,7 +36,7 @@ class OrderItemController extends BackendController
         $orderItems = $q->paginate($request->page_size ?? 100)->withQueryString();
 
         return $this->view('wncms-ecommerce::backend.order_items.index', [
-            'page_title' => wncms_model_word('order_item', 'management'),
+            'page_title' => wncms()->getModelWord('order_item', 'management'),
             'orderItems' => $orderItems,
             'itemTypes' => $this->getItemTypes(), // Retrieve all possible item types
         ]);
@@ -57,7 +57,7 @@ class OrderItemController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.order_items.create', [
-            'page_title' => wncms_model_word('order_item', 'create'),
+            'page_title' => wncms()->getModelWord('order_item', 'create'),
             'orders' => wncms()->getModelClass('order')::all(),
             'itemTypes' => $this->getItemTypes(), // Retrieve all possible item types
         ]);
@@ -93,7 +93,7 @@ class OrderItemController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.order_items.edit', [
-            'page_title' => wncms_model_word('order_item', 'edit'),
+            'page_title' => wncms()->getModelWord('order_item', 'edit'),
             'orderItem' => $orderItem,
             'orders' => wncms()->getModelClass('order')::all(),
             'itemTypes' => $this->getItemTypes(), // Retrieve all possible item types

@@ -44,7 +44,7 @@ class PlanController extends FrontendController
         $plans = Plan::query()->where('status', 'active')->get();
 
         return $this->view(
-            "frontend.themes.{$this->theme}.plans.index",
+            "{$this->theme}::plans.index",
             compact('plans'),
             'wncms-ecommerce::frontend.themes.default.plans.index'
         );
@@ -62,7 +62,7 @@ class PlanController extends FrontendController
 
         $user = auth()->user()->load('subscriptions');
         return $this->view(
-            "frontend.themes.{$this->theme}.plans.show",
+            "{$this->theme}::plans.show",
             compact('plan', 'user'),
             'wncms-ecommerce::frontend.themes.default.plans.show'
         );

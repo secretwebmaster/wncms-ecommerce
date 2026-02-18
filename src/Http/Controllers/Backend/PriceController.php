@@ -15,7 +15,7 @@ class PriceController extends BackendController
         $prices = $q->paginate($request->page_size ?? 100);
 
         return view('backend.prices.index', [
-            'page_title' =>  wncms_model_word('price', 'management'),
+            'page_title' =>  wncms()->getModelWord('price', 'management'),
             'Prices' => $prices,
         ]);
     }
@@ -25,7 +25,7 @@ class PriceController extends BackendController
         $price ??= new Price;
 
         return view('backend.prices.create', [
-            'page_title' =>  wncms_model_word('price', 'management'),
+            'page_title' =>  wncms()->getModelWord('price', 'management'),
             'price' => $price,
         ]);
     }
@@ -48,7 +48,7 @@ class PriceController extends BackendController
     public function edit($id)
     {
         return view('backend.prices.edit', [
-            'page_title' =>  wncms_model_word('price', 'management'),
+            'page_title' =>  wncms()->getModelWord('price', 'management'),
             'price' => $price,
         ]);
     }

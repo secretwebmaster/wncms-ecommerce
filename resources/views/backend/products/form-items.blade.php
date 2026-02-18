@@ -274,3 +274,5 @@
         });
     </script>
 @endpush
+
+@include('wncms::backend.common.developer-hints')

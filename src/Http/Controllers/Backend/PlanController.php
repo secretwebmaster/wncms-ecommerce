@@ -23,7 +23,7 @@ class PlanController extends BackendController
         $plans = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.plans.index', [
-            'page_title' => wncms_model_word('plan', 'management'),
+            'page_title' => wncms()->getModelWord('plan', 'management'),
             'plans' => $plans,
             'statuses' => $this->modelClass::STATUSES,
         ]);
@@ -48,7 +48,7 @@ class PlanController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.plans.create', [
-            'page_title' => wncms_model_word('plan', 'create'),
+            'page_title' => wncms()->getModelWord('plan', 'create'),
             'plan' => $plan,
             'statuses' => $this->modelClass::STATUSES,
         ]);
@@ -81,7 +81,7 @@ class PlanController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.plans.edit', [
-            'page_title' => wncms_model_word('plan', 'edit'),
+            'page_title' => wncms()->getModelWord('plan', 'edit'),
             'plan' => $plan,
             'statuses' => $this->modelClass::STATUSES,
         ]);

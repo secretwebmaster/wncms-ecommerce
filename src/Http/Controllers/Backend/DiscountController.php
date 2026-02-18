@@ -18,7 +18,7 @@ class DiscountController extends BackendController
         $discounts = $q->orderBy('id', 'desc')->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.discounts.index', [
-            'page_title' => wncms_model_word('discount', 'management'),
+            'page_title' => wncms()->getModelWord('discount', 'management'),
             'discounts' => $discounts,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,
@@ -39,7 +39,7 @@ class DiscountController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.discounts.create', [
-            'page_title' => wncms_model_word('discount', 'create'),
+            'page_title' => wncms()->getModelWord('discount', 'create'),
             'discount' => $discount,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,
@@ -87,7 +87,7 @@ class DiscountController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.discounts.edit', [
-            'page_title' => wncms_model_word('discount', 'edit'),
+            'page_title' => wncms()->getModelWord('discount', 'edit'),
             'discount' => $discount,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,

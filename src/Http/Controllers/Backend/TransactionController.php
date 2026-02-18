@@ -18,7 +18,7 @@ class TransactionController extends BackendController
         $transactions = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.transactions.index', [
-            'page_title' => wncms_model_word('transaction', 'management'),
+            'page_title' => wncms()->getModelWord('transaction', 'management'),
             'transactions' => $transactions,
         ]);
     }
@@ -37,7 +37,7 @@ class TransactionController extends BackendController
         $orders = wncms()->getModelClass('order')::all();
 
         return $this->view('wncms-ecommerce::backend.transactions.create', [
-            'page_title' => wncms_model_word('transaction', 'management'),
+            'page_title' => wncms()->getModelWord('transaction', 'management'),
             'transaction' => $transaction,
             'orders' => $orders,
         ]);
@@ -84,7 +84,7 @@ class TransactionController extends BackendController
         $orders = wncms()->getModelClass('order')::all();
         
         return $this->view('wncms-ecommerce::backend.transactions.edit', [
-            'page_title' => wncms_model_word('transaction', 'management'),
+            'page_title' => wncms()->getModelWord('transaction', 'management'),
             'transaction' => $transaction,
             'orders' => $orders,
         ]);

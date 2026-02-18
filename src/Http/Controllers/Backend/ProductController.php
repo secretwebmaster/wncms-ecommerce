@@ -12,18 +12,25 @@ class ProductController extends BackendController
      */
     public function index(Request $request)
     {
-
         $q = $this->modelClass::query();
 
-        // Filters
-        if ($request->filled('type')) {
+        if ($request->type) {
             $q->where('type', $request->type);
         }
+
+        if ($request->keyword) {
+            $q->where(function ($subQuery) use ($request) {
+                $subQuery->where('name', 'like', '%' . $request->keyword . '%')
+                    ->orWhere('slug', 'like', '%' . $request->keyword . '%');
+            });
+        }
+
+        $q->orderBy('id', 'desc');
 
         $products = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.products.index', [
-            'page_title' => wncms_model_word('product', 'management'),
+            'page_title' => wncms()->getModelWord('product', 'management'),
             'products' => $products,
         ]);
     }
@@ -46,7 +53,7 @@ class ProductController extends BackendController
         $productCategories = wncms()->tag()->getTagifyDropdownItems('product_category', 'name', 'name', false);
 
         return $this->view('wncms-ecommerce::backend.products.create', [
-            'page_title' => wncms_model_word('product', 'create'),
+            'page_title' => wncms()->getModelWord('product', 'create'),
             'product' => $product,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,
@@ -125,14 +132,14 @@ class ProductController extends BackendController
         if (!$product) {
             return back()->withMessage(__('wncms::word.model_not_found', ['model_name' => __('wncms::word.' . $this->singular)]));
         }
-        
+
         $productTags = wncms()->tag()->getTagifyDropdownItems('product_tag', 'name', 'name', false);
         $productCategories = wncms()->tag()->getTagifyDropdownItems('product_category', 'name', 'name', false);
 
         // dd($product);
 
         return $this->view('wncms-ecommerce::backend.products.edit', [
-            'page_title' => wncms_model_word('product', 'edit'),
+            'page_title' => wncms()->getModelWord('product', 'edit'),
             'product' => $product,
             'statuses' => $this->modelClass::STATUSES,
             'types' => $this->modelClass::TYPES,

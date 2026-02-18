@@ -35,7 +35,7 @@ class CreditController extends BackendController
         $credits = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.credits.index', [
-            'page_title' => wncms_model_word('credit', 'management'),
+            'page_title' => wncms()->getModelWord('credit', 'management'),
             'credits' => $credits,
             'types' => $this->modelClass::TYPES,
         ]);
@@ -53,7 +53,7 @@ class CreditController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.credits.create', [
-            'page_title' => wncms_model_word('credit', 'create'),
+            'page_title' => wncms()->getModelWord('credit', 'create'),
             'credit' => $credit,
             'users' => wncms()->getModelClass('user')::all(),
             'types' => $this->modelClass::TYPES,
@@ -97,7 +97,7 @@ class CreditController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.credits.edit', [
-            'page_title' => wncms_model_word('credit', 'edit'),
+            'page_title' => wncms()->getModelWord('credit', 'edit'),
             'credit' => $credit,
             'users' => wncms()->getModelClass('user')::all(),
             'types' => $this->modelClass::TYPES,

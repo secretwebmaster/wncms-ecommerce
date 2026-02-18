@@ -25,7 +25,7 @@ class CardController extends BackendController
         $products = wncms()->getModelClass('product')::all();
 
         return $this->view('wncms-ecommerce::backend.cards.index', [
-            'page_title' => wncms_model_word('card', 'management'),
+            'page_title' => wncms()->getModelWord('card', 'management'),
             'cards' => $cards,
             'plans' => $plans,
             'products' => $products,
@@ -46,7 +46,7 @@ class CardController extends BackendController
         $users = wncms()->getModel('user')->orderBy('username', 'asc')->get();
 
         return $this->view('wncms-ecommerce::backend.cards.create', [
-            'page_title' => wncms_model_word('card', 'create'),
+            'page_title' => wncms()->getModelWord('card', 'create'),
             'card' => $card,
             'users' => $users,
             'plans' => wncms()->getModelClass('plan')::all(),
@@ -82,7 +82,7 @@ class CardController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.cards.edit', [
-            'page_title' => wncms_model_word('card', 'edit'),
+            'page_title' => wncms()->getModelWord('card', 'edit'),
             'card' => $card,
             'users' => wncms()->getModelClass('user')::all(),
             'plans' => wncms()->getModelClass('plan')::all(),

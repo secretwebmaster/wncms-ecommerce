@@ -25,7 +25,7 @@ class SubscriptionController extends BackendController
         $plans = wncms()->getModelClass('plan')::all();
 
         return $this->view('wncms-ecommerce::backend.subscriptions.index', [
-            'page_title' => wncms_model_word('subscription', 'management'),
+            'page_title' => wncms()->getModelWord('subscription', 'management'),
             'subscriptions' => $subscriptions,
             'plans' => $plans,
             'statuses' => $this->modelClass::STATUSES,
@@ -47,7 +47,7 @@ class SubscriptionController extends BackendController
         $users = wncms()->getModelClass('user')::orderBy('username', 'asc')->get();
 
         return $this->view('wncms-ecommerce::backend.subscriptions.create', [
-            'page_title' => wncms_model_word('subscription', 'management'),
+            'page_title' => wncms()->getModelWord('subscription', 'management'),
             'subscription' => $subscription,
             'plans' => $plans,
             'users' => $users,
@@ -98,7 +98,7 @@ class SubscriptionController extends BackendController
         $users = wncms()->getModelClass('user')::orderBy('username', 'asc')->get();
 
         return $this->view('wncms-ecommerce::backend.subscriptions.edit', [
-            'page_title' => wncms_model_word('subscription', 'management'),
+            'page_title' => wncms()->getModelWord('subscription', 'management'),
             'subscription' => $subscription,
             'plans' => $plans,
             'users' => $users,

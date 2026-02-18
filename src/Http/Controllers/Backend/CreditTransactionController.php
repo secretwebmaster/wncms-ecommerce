@@ -30,7 +30,7 @@ class CreditTransactionController extends BackendController
         $creditTransactions = $q->paginate($request->page_size ?? 100);
 
         return $this->view('wncms-ecommerce::backend.credit_transactions.index', [
-            'page_title' => wncms_model_word('credit_transaction', 'management'),
+            'page_title' => wncms()->getModelWord('credit_transaction', 'management'),
             'creditTransactions' => $creditTransactions,
             'transactionTypes' => $this->modelClass::TRANSACTION_TYPES,
             'creditTypes' => wncms()->getModelClass('credit')::TYPES,
@@ -44,7 +44,7 @@ class CreditTransactionController extends BackendController
     public function create($id = null)
     {
         return $this->view('wncms-ecommerce::backend.credit_transactions.create', [
-            'page_title' => wncms_model_word('credit_transaction', 'create'),
+            'page_title' => wncms()->getModelWord('credit_transaction', 'create'),
             'users' => wncms()->getModelClass('user')::all(),
             'creditTypes' => wncms()->getModelClass('credit')::TYPES,
         ]);
@@ -88,7 +88,7 @@ class CreditTransactionController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.credit_transactions.edit', [
-            'page_title' => wncms_model_word('credit_transaction', 'edit'),
+            'page_title' => wncms()->getModelWord('credit_transaction', 'edit'),
             'creditTransaction' => $creditTransaction,
             'creditTypes' => wncms()->getModelClass('credit')::TYPES,
             'users' => wncms()->getModelClass('user')::all(),

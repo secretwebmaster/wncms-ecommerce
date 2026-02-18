@@ -23,7 +23,7 @@ class OrderController extends BackendController
         $orders = $q->paginate($request->page_size ?? 100)->withQueryString();
 
         return $this->view('wncms-ecommerce::backend.orders.index', [
-            'page_title' => wncms_model_word('orders', 'management'),
+            'page_title' => wncms()->getModelWord('orders', 'management'),
             'orders' => $this->modelClass::ORDERS,
             'userOrders' => $orders,
             'users' => wncms()->getModelClass('user')::all(),
@@ -42,7 +42,7 @@ class OrderController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.orders.create', [
-            'page_title' => wncms_model_word('orders', 'create'),
+            'page_title' => wncms()->getModelWord('orders', 'create'),
             'users' => wncms()->getModelClass('user')::all(),
         ]);
     }
@@ -74,7 +74,7 @@ class OrderController extends BackendController
         }
 
         return $this->view('wncms-ecommerce::backend.orders.edit', [
-            'page_title' => wncms_model_word('orders', 'edit'),
+            'page_title' => wncms()->getModelWord('orders', 'edit'),
             'order' => $order,
             'users' => wncms()->getModelClass('user')::all(),
         ]);
