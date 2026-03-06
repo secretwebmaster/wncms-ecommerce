@@ -40,6 +40,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | completed | codex | 2026-03-06T12:30:56Z | 2026-03-06T12:34:15Z | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
 | EC9 | Add ECPay (綠界) gateway integration | P1 | no | completed | codex | 2026-03-06T12:42:24Z | 2026-03-06T12:49:19Z | EC1 |
 | EC10 | Fix backend payment gateway controller method signature compatibility | P0 | yes | completed | codex | 2026-03-06T12:55:48Z | 2026-03-06T12:55:48Z | EC4 |
+| EC11 | Normalize backend sorting naming to `sort` and fix OrderController constant usage | P0 | yes | completed | codex | 2026-03-06T14:17:24Z | 2026-03-06T14:17:24Z | EC10 |
 
 ## Execution Order
 
@@ -53,6 +54,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 8. EC8
 9. EC9
 10. EC10
+11. EC11
 
 ## Task Details
 
@@ -248,5 +250,24 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - Verification commands:
     - `php -l src/Http/Controllers/Backend/PaymentGatewayController.php`
     - `php -l src/Http/Requests/PaymentGatewayFormRequest.php`
+- Blocker:
+  - none
+
+### EC11. Normalize backend sorting naming to `sort` and fix OrderController constant usage
+
+- Scope:
+  - Remove incorrect `Order::ORDERS` usage that caused fatal class constant error.
+  - Ensure backend sorting naming is `sort`/`direction` with `sorts` whitelist.
+  - Align order status filter source with model constants.
+- Acceptance:
+  - `/panel/orders` loads without fatal error.
+  - Sorting query params use `sort` + `direction` and only allow whitelisted fields.
+- Verification notes:
+  - Replaced invalid `orders => $this->modelClass::ORDERS` view data with `sorts` + `statuses`.
+  - Added sort whitelist in `OrderController@index` and applied `orderBy($sort, $direction)` using validated inputs.
+  - Updated backend orders status filter view to use `$statuses` instead of hardcoded legacy values.
+  - Updated `store`/`update` status validation to use `Order::STATUSES`.
+  - Verification command:
+    - `php -l src/Http/Controllers/Backend/OrderController.php`
 - Blocker:
   - none

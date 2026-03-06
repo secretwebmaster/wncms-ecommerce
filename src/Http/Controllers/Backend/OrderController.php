@@ -10,6 +10,7 @@ class OrderController extends BackendController
     public function index(Request $request)
     {
         $q = $this->modelClass::query();
+        $sorts = ['id', 'created_at', 'updated_at', 'total_amount', 'status', 'paid_at', 'failed_at'];
 
         // Filters
         if ($request->filled('user_id')) {
@@ -20,11 +21,23 @@ class OrderController extends BackendController
             $q->where('status', $request->status);
         }
 
+        $sort = (string) $request->input('sort', 'id');
+        if (!in_array($sort, $sorts, true)) {
+            $sort = 'id';
+        }
+
+        $direction = strtolower((string) $request->input('direction', 'desc'));
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+        $q->orderBy($sort, $direction);
+
         $orders = $q->paginate($request->page_size ?? 100)->withQueryString();
 
         return $this->view('wncms-ecommerce::backend.orders.index', [
             'page_title' => wncms()->getModelWord('orders', 'management'),
-            'orders' => $this->modelClass::ORDERS,
+            'statuses' => $this->modelClass::STATUSES,
+            'sorts' => $sorts,
             'userOrders' => $orders,
             'users' => wncms()->getModelClass('user')::all(),
         ]);
@@ -51,7 +64,7 @@ class OrderController extends BackendController
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'status' => 'required|string|in:pending,paid,failed,cancelled,completed',
+            'status' => 'required|string|in:' . implode(',', $this->modelClass::STATUSES),
             'total_amount' => 'required|numeric|min:0.01',
             'payment_method' => 'nullable|string|max:255',
         ]);
@@ -89,7 +102,7 @@ class OrderController extends BackendController
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'status' => 'required|string|in:pending,paid,failed,cancelled,completed',
+            'status' => 'required|string|in:' . implode(',', $this->modelClass::STATUSES),
             'total_amount' => 'required|numeric|min:0.01',
             'payment_method' => 'nullable|string|max:255',
         ]);
