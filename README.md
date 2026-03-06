@@ -1,63 +1,32 @@
-# WNCMS E-commerce
+# WNCMS Ecommerce
 
-`secretwebmaster/wncms-ecommerce` is the official E-commerce module for **WNCMS**, providing full management of products, orders, transactions, plans, subscriptions, and payment gateways.
+`secretwebmaster/wncms-ecommerce` is a reusable WNCMS billing package for online store and SaaS scenarios.
 
----
+## Scope
 
-## Features
+- One-time checkout: `Order`, `OrderItem`, `Transaction`
+- Recurring subscriptions: `Plan`, `Subscription`, renewal orders
+- Payment gateway processing: `PaymentGateway` + processor classes
 
-- Product management (CRUD)
-- Order and OrderItem management
-- Subscription and Plan management
-- Payment Gateway integration
-- Credit and Transaction tracking
-- Auto-generated permissions via `wncms:create-model-permission`
-- Backend and frontend views
-- Multi-language support (EN, zh_TW, zh_CN, JA)
-- Auto-activation support in WNCMS backend
+## Documentation
 
----
+- `documentations/architecture.md`
+- `documentations/payment-lifecycle.md`
+- `documentations/model-reference.md`
 
 ## Installation
 
-This package is designed for seamless integration with WNCMS.  
-Simply run:
-
 ```bash
 composer require secretwebmaster/wncms-ecommerce
-````
-
-No manual migration or seeding is required — everything is automatically handled when activating the package in the WNCMS backend.
-
----
-
-## Activation
-
-Once installed, open **WNCMS backend → Packages → E-commerce**, then click **Activate**.
-This will automatically:
-
-* Run the migrations
-* Register all models, managers, and controllers
-* Generate permissions for `admin` and `superadmin`
-* Display new backend menu items
-
----
-
-## Changelog
-
-### [v1.0.0] – 2025-10-23
-
-#### Added
-
-* Initial release of `wncms-ecommerce`
-* Includes products, orders, transactions, plans, subscriptions, and payment gateways
-* Full backend and frontend view integration
-* Permission auto-registration via `wncms:create-model-permission`
-
 ```
 
-## Plan
+## Commands
 
-- Allow product, plan, discount, tag to be taggable
-- Add credit system and allow credit type exchange
-- Add discount system
+```bash
+php artisan wncms-ecommerce:pay-order {orderSlug} {paymentGatewaySlug}
+php artisan wncms-ecommerce:renew-subscriptions
+```
+
+## Design Goal
+
+Keep package logic reusable for any online store/SaaS. Project-specific tenant/domain/provision orchestration should be implemented in host project layers, not hard-coded in this package.
