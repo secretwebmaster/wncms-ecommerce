@@ -37,7 +37,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | completed | codex | 2026-03-06T12:23:10Z | 2026-03-06T12:25:13Z | EC2, EC3 |
 | EC6 | Automated test matrix + CI release gate | P0 | yes | completed | codex | 2026-03-06T12:25:34Z | 2026-03-06T12:28:38Z | EC1, EC2, EC3, EC4 |
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | completed | codex | 2026-03-06T12:29:09Z | 2026-03-06T12:30:32Z | EC6 |
-| EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
+| EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | completed | codex | 2026-03-06T12:30:56Z | 2026-03-06T12:34:15Z | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
 
 ## Execution Order
 
@@ -194,6 +194,12 @@ Purpose: this is the shared execution board for production hardening of `secretw
 - Acceptance:
   - Package is installable/upgradable on live projects using published docs.
 - Verification notes:
-  - pending
+  - Added `CHANGELOG.md` with versioned release notes (`1.1.0-rc.1`) and upgrade-related change summary.
+  - Added `documentations/release-checklist.md` with operator-facing RC validation steps for metadata, install, upgrade, sandbox gateways, lifecycle, reconciliation, CI, and evidence capture.
+  - Expanded `README.md` with production install flow, upgrade flow, publish/migrate/seed commands, and release documentation index.
+  - Upgraded `documentations/upgrade-guide.md` to a versioned rollout playbook (`1.0.x -> 1.1.x`) with rollback guidance and post-upgrade verification checks.
+  - Verification commands:
+    - `php -l src/Providers/EcommerceServiceProvider.php`
+    - `php -l database/migrations/2026_03_06_121800_add_backward_compatibility_columns_for_billing_refactor.php`
 - Blocker:
   - none

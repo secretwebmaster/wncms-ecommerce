@@ -1,46 +1,63 @@
 # Upgrade Guide
 
-This guide covers safe upgrade steps for projects that already installed older versions of `secretwebmaster/wncms-ecommerce`.
+This guide covers safe upgrade steps for already-installed projects.
+
+## Supported Paths
+
+| from | to | migration required | key note |
+| --- | --- | --- | --- |
+| `<=1.0.0` | `1.1.x` | yes | run additive compatibility migration |
 
 ## Compatibility Principle
 
-- Historical released `create_*` migrations must be treated as immutable.
-- New schema requirements are delivered via additive migrations.
-- Upgrade path must be safe for both:
-  - Existing production databases
-  - Fresh installs
+- Historical released `create_*` migrations are immutable.
+- New schema requirements ship via additive forward migrations.
+- Upgrade must stay safe for existing production databases and fresh installs.
 
-## New Compatibility Migration
+## Upgrade `1.0.x` -> `1.1.x`
 
-- Migration file:
-  - `database/migrations/2026_03_06_121800_add_backward_compatibility_columns_for_billing_refactor.php`
-- Purpose:
-  - Add newly required billing/gateway/subscription columns if missing
-  - Add required indexes/unique constraints defensively
-  - Avoid destructive schema operations during upgrade
+### 1. Prepare rollback point
 
-## Upgrade Steps
+- Backup database and `.env`.
+- Pause scheduler jobs that mutate orders/subscriptions during deployment.
 
-1. Backup database and `.env`.
-2. Upgrade package version via composer.
-3. Run migrations:
-   - `php artisan migrate --force`
-4. Clear cached config/routes/views:
-   - `php artisan optimize:clear`
-5. Re-seed payment gateways if needed:
-   - `php artisan db:seed --class=\"Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\PaymentGatewaySeeder\"`
-6. Validate key tables:
-   - `orders`, `order_items`, `transactions`, `subscriptions`, `payment_gateways`, `plans`, `products`
+### 2. Update package version
 
-## Post-Upgrade Checks
+```bash
+composer update secretwebmaster/wncms-ecommerce
+```
 
-- Checkout callback endpoints return expected status for invalid signatures (4xx).
-- Existing pending/failed orders still load and can be processed.
-- Renewal command still executes:
+### 3. Run additive migrations
+
+```bash
+php artisan migrate --force
+```
+
+Compatibility migration used by this upgrade:
+- `database/migrations/2026_03_06_121800_add_backward_compatibility_columns_for_billing_refactor.php`
+
+### 4. Clear cached runtime metadata
+
+```bash
+php artisan optimize:clear
+```
+
+### 5. Re-seed gateways when defaults are needed
+
+```bash
+php artisan db:seed --class="Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\PaymentGatewaySeeder"
+```
+
+## Post-Upgrade Verification
+
+- Callback endpoints reject unverifiable payloads with 4xx.
+- Existing orders/subscriptions remain queryable.
+- Renewal/lifecycle commands still execute:
   - `php artisan wncms-ecommerce:renew-subscriptions`
-- Payment gateway settings include expected fields and existing secrets are intact.
+  - `php artisan wncms-ecommerce:advance-subscriptions`
+- Gateway settings preserve existing secrets when partial updates are submitted.
 
 ## Rollback Strategy
 
-- If upgrade fails, restore DB backup and previous lockfile/vendor state.
-- The compatibility migration is forward-only by design; use backup restore for rollback.
+- Restore DB backup and previous dependency lock/vendor state.
+- Compatibility migration is forward-only; rollback should use backup restore, not destructive down migration.

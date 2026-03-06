@@ -8,22 +8,40 @@
 - Recurring subscriptions: `Plan`, `Subscription`, renewal orders
 - Payment gateway processing: `PaymentGateway` + processor classes
 
-## Documentation
+## Requirements
 
-- `documentations/architecture.md`
-- `documentations/payment-lifecycle.md`
-- `documentations/model-reference.md`
-- `documentations/production-readiness-design.md`
-- `documentations/to-do.md`
-- `documentations/upgrade-guide.md`
-- `documentations/test-matrix.md`
-- `documentations/operations-runbook.md`
+- Host project includes `secretwebmaster/wncms-core:^6.0`
+- Host project can run Laravel migrations and seeders
 
-## Installation
+## Installation (Fresh Install)
 
 ```bash
 composer require secretwebmaster/wncms-ecommerce
+php artisan vendor:publish --tag=wncms-ecommerce-config
+php artisan migrate
+php artisan db:seed --class="Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\PaymentGatewaySeeder"
 ```
+
+After installation:
+
+- confirm backend payment gateway pages load
+- configure gateway credentials in backend settings
+
+## Upgrade (Existing Project)
+
+```bash
+composer update secretwebmaster/wncms-ecommerce
+php artisan migrate --force
+php artisan optimize:clear
+```
+
+Optional after upgrade:
+
+```bash
+php artisan db:seed --class="Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\PaymentGatewaySeeder"
+```
+
+See `documentations/upgrade-guide.md` for version-specific checks.
 
 ## Commands
 
@@ -39,6 +57,19 @@ php artisan wncms-ecommerce:reconcile-transactions {--gateway=} {--date-from=} {
 ```bash
 composer test
 ```
+
+## Documentation
+
+- `CHANGELOG.md`
+- `documentations/architecture.md`
+- `documentations/model-reference.md`
+- `documentations/payment-lifecycle.md`
+- `documentations/production-readiness-design.md`
+- `documentations/upgrade-guide.md`
+- `documentations/release-checklist.md`
+- `documentations/test-matrix.md`
+- `documentations/operations-runbook.md`
+- `documentations/to-do.md`
 
 ## Design Goal
 
