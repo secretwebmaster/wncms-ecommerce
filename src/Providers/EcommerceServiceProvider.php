@@ -96,7 +96,7 @@ class EcommerceServiceProvider extends ServiceProvider
             'info' => [
                 'name' => 'E-commerce',
                 'description' => 'Manage products, orders, transactions, payments, and subscriptions.',
-                'version' => '1.0.0',
+                'version' => '1.0.4-alpha1',
                 'author'  => 'Secretwebmaster',
                 'icon'    => 'fa-solid fa-cart-shopping',
             ],
@@ -237,7 +237,7 @@ class EcommerceServiceProvider extends ServiceProvider
         //             'zh_CN' => '管理商品、订单、交易、支付与订阅。',
         //             'ja'    => '商品、注文、取引、支払い、サブスクリプションを管理します。',
         //         ],
-        //         'version' => '1.0.0',
+        //         'version' => '1.0.4-alpha1',
         //         'author'  => 'Secretwebmaster',
         //         'icon'    => 'fa-solid fa-cart-shopping',
         //     ],
