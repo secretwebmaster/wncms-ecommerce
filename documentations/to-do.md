@@ -36,7 +36,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC4 | Gateway config validation + secret handling hardening | P1 | yes | completed | codex | 2026-03-06T12:20:10Z | 2026-03-06T12:22:47Z | EC1 |
 | EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | completed | codex | 2026-03-06T12:23:10Z | 2026-03-06T12:25:13Z | EC2, EC3 |
 | EC6 | Automated test matrix + CI release gate | P0 | yes | completed | codex | 2026-03-06T12:25:34Z | 2026-03-06T12:28:38Z | EC1, EC2, EC3, EC4 |
-| EC7 | Observability, reconciliation, and failure runbook | P1 | yes | todo | - | - | - | EC6 |
+| EC7 | Observability, reconciliation, and failure runbook | P1 | yes | completed | codex | 2026-03-06T12:29:09Z | 2026-03-06T12:30:32Z | EC6 |
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
 
 ## Execution Order
@@ -176,7 +176,12 @@ Purpose: this is the shared execution board for production hardening of `secretw
 - Acceptance:
   - Operators can diagnose and reconcile from logs/reports.
 - Verification notes:
-  - pending
+  - Added command `wncms-ecommerce:reconcile-transactions` with gateway/date filters and JSON output.
+  - Reconciliation detects key drift patterns between `orders` and `transactions`.
+  - Registered reconciliation command in package service provider command list.
+  - Added operator runbook `documentations/operations-runbook.md` for verification failures, duplicates, drift handling, and lifecycle operations.
+  - Updated README documentation/command index to include reconciliation and runbook.
+  - Verification commands: `php -l` passed for new command + updated provider.
 - Blocker:
   - none
 

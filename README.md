@@ -17,6 +17,7 @@
 - `documentations/to-do.md`
 - `documentations/upgrade-guide.md`
 - `documentations/test-matrix.md`
+- `documentations/operations-runbook.md`
 
 ## Installation
 
@@ -30,6 +31,7 @@ composer require secretwebmaster/wncms-ecommerce
 php artisan wncms-ecommerce:pay-order {orderSlug} {paymentGatewaySlug}
 php artisan wncms-ecommerce:renew-subscriptions
 php artisan wncms-ecommerce:advance-subscriptions
+php artisan wncms-ecommerce:reconcile-transactions {--gateway=} {--date-from=} {--date-to=} {--json}
 ```
 
 ## Testing

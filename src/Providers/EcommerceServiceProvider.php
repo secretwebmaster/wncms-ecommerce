@@ -204,6 +204,7 @@ class EcommerceServiceProvider extends ServiceProvider
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\PayOrder::class,
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\RenewSubscriptions::class,
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\AdvanceSubscriptions::class,
+                \Secretwebmaster\WncmsEcommerce\Console\Commands\ReconcileTransactions::class,
             ]);
         }
 
