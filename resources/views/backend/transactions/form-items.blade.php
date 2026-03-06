@@ -19,8 +19,8 @@
         <div class="col-lg-9 fv-row">
             <select id="status" name="status" class="form-select form-select-sm" required>
                 <option value="">@lang('wncms::word.please_select')</option>
-                @foreach(['pending', 'paid', 'failed', 'refunded'] as $status)
-                    <option value="{{ $status }}" {{ $status === old('status', $transaction->status ?? 'pending') ? 'selected' : '' }}>@lang('wncms::word.' . $status)</option>
+                @foreach(\Secretwebmaster\WncmsEcommerce\Models\Transaction::STATUSES as $status)
+                    <option value="{{ $status }}" {{ $status === old('status', $transaction->status ?? 'pending') ? 'selected' : '' }}>@lang('wncms-ecommerce::word.' . $status)</option>
                 @endforeach
             </select>
         </div>

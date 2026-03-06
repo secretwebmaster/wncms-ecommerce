@@ -16,10 +16,13 @@ return [
     'inactive' => '停用',
     'pending_payment' => '待付款',
     'pending_processing' => '待處理',
+    'pending' => '待處理',
     'processing' => '處理中',
+    'succeeded' => '成功',
     'cancelled' => '已取消',
     'completed' => '已完成',
     'failed' => '失敗',
+    'refunded' => '已退款',
     'virtual' => '虛擬商品',
     'physical' => '實體商品',
 

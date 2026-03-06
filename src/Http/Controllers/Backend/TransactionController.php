@@ -10,6 +10,7 @@ class TransactionController extends BackendController
     public function index(Request $request)
     {
         $q = $this->modelClass::query();
+        $statuses = $this->modelClass::STATUSES;
 
         if ($request->filled('status')) {
             $q->where('status', $request->status);
@@ -20,6 +21,7 @@ class TransactionController extends BackendController
         return $this->view('wncms-ecommerce::backend.transactions.index', [
             'page_title' => wncms()->getModelWord('transaction', 'management'),
             'transactions' => $transactions,
+            'statuses' => $statuses,
         ]);
     }
 
@@ -49,7 +51,7 @@ class TransactionController extends BackendController
             'order_id' => 'required|exists:orders,id',
             'ref_id' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,paid,failed,refunded',
+            'status' => 'required|in:' . implode(',', $this->modelClass::STATUSES),
             'payment_method' => 'nullable|string|max:255',
         ], [
             'order_id.required' => __('wncms::word.field_is_required', ['field_name' => __('wncms::word.order_id')]),
@@ -59,11 +61,11 @@ class TransactionController extends BackendController
         ]);
 
         $transaction = $this->modelClass::create([
-            'order_id' => $request->order_id,
-            'status' => $request->status,
-            'amount' => $request->amount,
-            'payment_method' => $request->payment_method,
-            'ref_id' => $request->ref_id,
+            'order_id' => $validated['order_id'],
+            'status' => $validated['status'],
+            'amount' => $validated['amount'],
+            'payment_method' => $validated['payment_method'] ?? null,
+            'ref_id' => $validated['ref_id'] ?? null,
             'is_fraud' => $request->is_fraud ? true : false,
         ]);
 
@@ -101,7 +103,7 @@ class TransactionController extends BackendController
             'order_id' => 'required|exists:orders,id',
             'ref_id' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,paid,failed,refunded',
+            'status' => 'required|in:' . implode(',', $this->modelClass::STATUSES),
             'payment_method' => 'nullable|string|max:255',
         ], [
             'order_id.required' => __('wncms::word.field_is_required', ['field_name' => __('wncms::word.order_id')]),
@@ -111,11 +113,11 @@ class TransactionController extends BackendController
         ]);
 
         $transaction->update([
-            'order_id' => $request->order_id,
-            'status' => $request->status,
-            'amount' => $request->amount,
-            'payment_method' => $request->payment_method,
-            'ref_id' => $request->ref_id,
+            'order_id' => $validated['order_id'],
+            'status' => $validated['status'],
+            'amount' => $validated['amount'],
+            'payment_method' => $validated['payment_method'] ?? null,
+            'ref_id' => $validated['ref_id'] ?? null,
             'is_fraud' => $request->is_fraud ? true : false,
         ]);
 

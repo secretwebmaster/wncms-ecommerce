@@ -41,6 +41,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC9 | Add ECPay (綠界) gateway integration | P1 | no | completed | codex | 2026-03-06T12:42:24Z | 2026-03-06T12:49:19Z | EC1 |
 | EC10 | Fix backend payment gateway controller method signature compatibility | P0 | yes | completed | codex | 2026-03-06T12:55:48Z | 2026-03-06T12:55:48Z | EC4 |
 | EC11 | Normalize backend sorting naming to `sort` and fix OrderController constant usage | P0 | yes | completed | codex | 2026-03-06T14:17:24Z | 2026-03-06T14:17:24Z | EC10 |
+| EC12 | Fix transaction status translation and status-set consistency | P0 | yes | completed | codex | 2026-03-06T15:32:28Z | 2026-03-06T15:32:28Z | EC6 |
 
 ## Execution Order
 
@@ -55,6 +56,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 9. EC9
 10. EC10
 11. EC11
+12. EC12
 
 ## Task Details
 
@@ -269,5 +271,24 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - Updated `store`/`update` status validation to use `Order::STATUSES`.
   - Verification command:
     - `php -l src/Http/Controllers/Backend/OrderController.php`
+- Blocker:
+  - none
+
+### EC12. Fix transaction status translation and status-set consistency
+
+- Scope:
+  - Fix untranslated transaction statuses in backend index.
+  - Align transaction status options/validation with `Transaction::STATUSES`.
+- Acceptance:
+  - Transactions index shows translated status labels (including `succeeded`).
+  - Create/edit/index status sets are consistent across controller and views.
+- Verification notes:
+  - Updated transactions index to use package translation prefix (`wncms-ecommerce::word.`) for status badge rendering.
+  - Added package locale keys for transaction statuses (`pending`, `succeeded`, `completed`, `failed`, `refunded`, `cancelled`) in `en`, `zh_TW`, `zh_CN`, and `ja`.
+  - Updated transaction index filter + transaction form status options to use model-driven statuses.
+  - Updated `TransactionController` index/store/update to use `Transaction::STATUSES` for filter exposure and validation constraints.
+  - Verification commands:
+    - `php -l src/Http/Controllers/Backend/TransactionController.php`
+    - `php -l lang/en/word.php lang/zh_TW/word.php lang/zh_CN/word.php lang/ja/word.php`
 - Blocker:
   - none

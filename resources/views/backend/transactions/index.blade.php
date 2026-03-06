@@ -17,9 +17,9 @@
                 <div class="col-6 col-md-auto mb-3 ms-0">
                     <select name="status" class="form-select form-select-sm">
                         <option value="">@lang('wncms::word.select') @lang('wncms::word.status')</option>
-                        @foreach(['pending', 'paid', 'failed', 'refunded'] as $status)
+                        @foreach(($statuses ?? []) as $status)
                             <option value="{{ $status }}" @if(request('status') === $status) selected @endif>
-                                @lang('wncms::word.' . $status)
+                                @lang('wncms-ecommerce::word.' . $status)
                             </option>
                         @endforeach
                     </select>
@@ -107,8 +107,15 @@
                                 {{-- Data --}}
                                 <td>{{ $transaction->id }}</td>
                                 <td>{{ $transaction->order_id }}</td>
-                                <td>@include('wncms::common.table_status', ['model' => $transaction])</td>
-                                {{-- <td>@lang('wncms::word.' . $transaction->status)</td> --}}
+                                <td>
+                                    @include('wncms::common.table_status', [
+                                        'model' => $transaction,
+                                        'translationPrefix' => 'wncms-ecommerce::word.',
+                                        'active_statuses' => ['succeeded'],
+                                        'completed_statuses' => ['completed', 'refunded'],
+                                        'error_statuses' => ['failed', 'cancelled'],
+                                    ])
+                                </td>
                                 <td>{{ wncms()->displayPrice($transaction->amount) }}</td>
                                 <td>{{ $transaction->payment_method ?? '-' }}</td>
                                 <td>{{ $transaction->ref_id ?? '-' }}</td>
