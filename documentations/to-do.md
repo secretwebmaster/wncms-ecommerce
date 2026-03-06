@@ -33,7 +33,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC1 | Callback trust model + webhook verification hardening | P0 | yes | completed | codex | 2026-03-06T11:51:38Z | 2026-03-06T11:57:12Z | - |
 | EC2 | PayPal return/capture finalization contract | P0 | yes | completed | codex | 2026-03-06T12:15:49Z | 2026-03-06T12:17:17Z | EC1 |
 | EC3 | Additive migration strategy for backward-compatible upgrades | P0 | yes | completed | codex | 2026-03-06T12:17:47Z | 2026-03-06T12:19:49Z | EC1 |
-| EC4 | Gateway config validation + secret handling hardening | P1 | yes | todo | - | - | - | EC1 |
+| EC4 | Gateway config validation + secret handling hardening | P1 | yes | completed | codex | 2026-03-06T12:20:10Z | 2026-03-06T12:22:47Z | EC1 |
 | EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | todo | - | - | - | EC2, EC3 |
 | EC6 | Automated test matrix + CI release gate | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4 |
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | todo | - | - | - | EC6 |
@@ -119,7 +119,12 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - Invalid config rejected with actionable messages.
   - Partial update never wipes existing secret fields.
 - Verification notes:
-  - pending
+  - Added `PaymentGatewayFormRequest` with slug uniqueness, URL validation, driver/currency constraints, and attributes validation.
+  - Wired backend payment-gateway `store`/`update` actions to use typed form request validation.
+  - Implemented secret-preserving update behavior for `client_secret` and `webhook_secret` when omitted.
+  - Added backend form input for `webhook_secret` (used as webhook secret/id depending on gateway).
+  - Added localization keys for validation/form labels (`webhook_secret_or_id`, `invalid_return_url`) in all package locales.
+  - Verification commands: `php -l` passed for updated request/controller/view/lang files.
 - Blocker:
   - none
 

@@ -115,4 +115,6 @@ return [
     'ecommerce_stripe_api_key' => 'Stripe API Key',
     'ecommerce_stripchat_api_key' => 'Stripchat API Key',
     'ecommerce_epusdt_api_key' => 'EPUSDT API Key',
+    'webhook_secret_or_id' => 'Webhook Secret / ID',
+    'invalid_return_url' => '回傳網址必須為完整 URL 或以 / 開頭的路徑',
 ];

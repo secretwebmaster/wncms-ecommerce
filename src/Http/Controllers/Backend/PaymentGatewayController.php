@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Secretwebmaster\WncmsEcommerce\Http\Requests\PaymentGatewayFormRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Wncms\Http\Controllers\Backend\BackendController;
 
@@ -42,28 +43,29 @@ class PaymentGatewayController extends BackendController
         ]);
     }
 
-    public function store(Request $request)
+    public function store(PaymentGatewayFormRequest $request)
     {
-        // dd($request->all());
-        $slug = trim((string) $request->slug);
+        $slug = trim((string) $request->input('slug'));
+        $driver = trim((string) $request->input('driver', ''));
+        $driver = $driver !== '' ? $driver : $slug;
         $attributes = $this->normalizeAttributeRows($request->input('attributes', []));
 
         $paymentGateway = $this->modelClass::create([
-            'name' => $request->name,
-            'status' => $request->status ?? 'active',
+            'name' => trim((string) $request->input('name')),
+            'status' => $request->input('status', 'active'),
             'slug' => $slug,
-            'type' => $request->type,
-            'driver' => $request->driver ?: $slug,
-            'account_id' => $request->account_id,
-            'client_id' => $request->client_id,
-            'client_secret' => $request->client_secret,
-            'webhook_secret' => $request->webhook_secret,
-            'endpoint' => $request->endpoint,
+            'type' => $request->input('type'),
+            'driver' => $driver,
+            'account_id' => $request->filled('account_id') ? trim((string) $request->input('account_id')) : null,
+            'client_id' => $request->filled('client_id') ? trim((string) $request->input('client_id')) : null,
+            'client_secret' => $request->filled('client_secret') ? trim((string) $request->input('client_secret')) : null,
+            'webhook_secret' => $request->filled('webhook_secret') ? trim((string) $request->input('webhook_secret')) : null,
+            'endpoint' => $request->filled('endpoint') ? trim((string) $request->input('endpoint')) : null,
             'return_url' => $request->filled('return_url') ? trim((string) $request->return_url) : null,
-            'currency' => $request->currency ?: 'USD',
-            'is_sandbox' => $request->boolean('is_sandbox', true),
+            'currency' => strtoupper((string) ($request->input('currency') ?: 'USD')),
+            'is_sandbox' => $request->has('is_sandbox') ? $request->boolean('is_sandbox') : true,
             'attributes' => $attributes,
-            'description' => $request->description,
+            'description' => $request->filled('description') ? (string) $request->input('description') : null,
         ]);
 
         $this->flush();
@@ -87,32 +89,35 @@ class PaymentGatewayController extends BackendController
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(PaymentGatewayFormRequest $request, $id)
     {
         $paymentGateway = $this->modelClass::find($id);
         if (!$paymentGateway) {
             return back()->withMessage(__('wncms::word.model_not_found', ['model_name' => __('wncms::word.' . $this->singular)]));
         }
 
-        $slug = trim((string) $request->slug);
+        $slug = trim((string) $request->input('slug'));
+        $driver = trim((string) $request->input('driver', ''));
+        $driver = $driver !== '' ? $driver : ($paymentGateway->driver ?: $slug);
         $attributes = $this->normalizeAttributeRows($request->input('attributes', []));
 
         $paymentGateway->update([
-            'name' => $request->name,
-            'status' => $request->status ?? 'active',
+            'name' => trim((string) $request->input('name')),
+            'status' => $request->input('status', 'active'),
             'slug' => $slug,
-            'type' => $request->type,
-            'driver' => $request->driver ?: ($paymentGateway->driver ?: $slug),
-            'account_id' => $request->account_id,
-            'client_id' => $request->client_id,
-            'client_secret' => $request->client_secret,
-            'webhook_secret' => $request->webhook_secret,
-            'endpoint' => $request->endpoint,
+            'type' => $request->input('type'),
+            'driver' => $driver,
+            'account_id' => $request->filled('account_id') ? trim((string) $request->input('account_id')) : $paymentGateway->account_id,
+            'client_id' => $request->filled('client_id') ? trim((string) $request->input('client_id')) : $paymentGateway->client_id,
+            // Preserve existing secrets when request omits secret fields.
+            'client_secret' => $request->filled('client_secret') ? trim((string) $request->input('client_secret')) : $paymentGateway->client_secret,
+            'webhook_secret' => $request->filled('webhook_secret') ? trim((string) $request->input('webhook_secret')) : $paymentGateway->webhook_secret,
+            'endpoint' => $request->filled('endpoint') ? trim((string) $request->input('endpoint')) : $paymentGateway->endpoint,
             'return_url' => $request->filled('return_url') ? trim((string) $request->return_url) : null,
-            'currency' => $request->currency ?: $paymentGateway->currency,
-            'is_sandbox' => $request->boolean('is_sandbox', (bool) $paymentGateway->is_sandbox),
+            'currency' => strtoupper((string) ($request->input('currency') ?: $paymentGateway->currency)),
+            'is_sandbox' => $request->has('is_sandbox') ? $request->boolean('is_sandbox') : (bool) $paymentGateway->is_sandbox,
             'attributes' => $attributes,
-            'description' => $request->description,
+            'description' => $request->filled('description') ? (string) $request->input('description') : $paymentGateway->description,
         ]);
 
         $this->flush();

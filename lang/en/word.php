@@ -15,4 +15,6 @@ return [
     'ecommerce_stripe_api_key' => 'Stripe API Key',
     'ecommerce_stripchat_api_key' => 'Stripchat API Key',
     'ecommerce_epusdt_api_key' => 'EPUSDT API Key',
+    'webhook_secret_or_id' => 'Webhook Secret / ID',
+    'invalid_return_url' => 'Return URL must be an absolute URL or a path starting with /',
 ];

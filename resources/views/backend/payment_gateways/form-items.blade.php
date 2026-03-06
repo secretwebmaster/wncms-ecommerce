@@ -91,6 +91,14 @@
         </div>
     </div>
 
+    {{-- Webhook Secret / ID --}}
+    <div class="row mb-3">
+        <label class="col-lg-3 col-form-label fw-bold fs-6" for="webhook_secret">@lang('wncms-ecommerce::word.webhook_secret_or_id')</label>
+        <div class="col-lg-9 fv-row">
+            <input id="webhook_secret" type="password" name="webhook_secret" class="form-control form-control-sm" value="{{ old('webhook_secret', $paymentGateway->webhook_secret ?? '') }}" />
+        </div>
+    </div>
+
     @if ($isPaypalGateway)
         <div class="row mb-3">
             <label class="col-lg-3 col-form-label fw-bold fs-6" for="is_sandbox">@lang('wncms::word.tgp_paypal_mode')</label>

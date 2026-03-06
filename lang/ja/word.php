@@ -15,4 +15,6 @@ return [
     'ecommerce_stripe_api_key' => 'Stripe APIキー',
     'ecommerce_stripchat_api_key' => 'Stripchat APIキー',
     'ecommerce_epusdt_api_key' => 'EPUSDT APIキー',
+    'webhook_secret_or_id' => 'Webhook Secret / ID',
+    'invalid_return_url' => 'Return URL は絶対 URL か / で始まるパスである必要があります',
 ];
