@@ -15,6 +15,7 @@
 - `documentations/model-reference.md`
 - `documentations/production-readiness-design.md`
 - `documentations/to-do.md`
+- `documentations/upgrade-guide.md`
 
 ## Installation
 
