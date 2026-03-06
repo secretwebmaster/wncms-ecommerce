@@ -218,6 +218,8 @@ class OrderManager
 
     public function markFailed(Order $order, array $transactionData = []): Order
     {
+        $externalId = $transactionData['external_id'] ?? null;
+
         $order->update([
             'status' => 'failed',
             'failed_at' => now(),
@@ -225,22 +227,26 @@ class OrderManager
             'gateway_reference' => $transactionData['gateway_reference'] ?? $order->gateway_reference,
         ]);
 
-        Transaction::create([
-            'order_id' => $order->id,
-            'subscription_id' => $order->subscription_id,
-            'payment_gateway_id' => $order->payment_gateway_id,
-            'type' => $order->order_type === 'subscription_renewal' ? 'renewal' : 'charge',
-            'direction' => 'debit',
-            'status' => 'failed',
-            'amount' => $order->total_amount,
-            'currency' => $order->currency,
-            'payment_method' => $transactionData['payment_method'] ?? ($order->payment_gateway?->slug ?? $order->payment_method),
-            'external_id' => $transactionData['external_id'] ?? null,
-            'ref_id' => $transactionData['ref_id'] ?? null,
-            'processed_at' => now(),
-            'payload' => $transactionData['payload'] ?? null,
-            'is_fraud' => (bool) ($transactionData['is_fraud'] ?? false),
-        ]);
+        Transaction::updateOrCreate(
+            [
+                'order_id' => $order->id,
+                'external_id' => $externalId,
+            ],
+            [
+                'subscription_id' => $order->subscription_id,
+                'payment_gateway_id' => $order->payment_gateway_id,
+                'type' => $order->order_type === 'subscription_renewal' ? 'renewal' : 'charge',
+                'direction' => 'debit',
+                'status' => 'failed',
+                'amount' => $order->total_amount,
+                'currency' => $order->currency,
+                'payment_method' => $transactionData['payment_method'] ?? ($order->payment_gateway?->slug ?? $order->payment_method),
+                'ref_id' => $transactionData['ref_id'] ?? null,
+                'processed_at' => now(),
+                'payload' => $transactionData['payload'] ?? null,
+                'is_fraud' => (bool) ($transactionData['is_fraud'] ?? false),
+            ]
+        );
 
         return $order->fresh();
     }

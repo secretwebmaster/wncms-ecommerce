@@ -13,6 +13,8 @@
 - `documentations/architecture.md`
 - `documentations/payment-lifecycle.md`
 - `documentations/model-reference.md`
+- `documentations/production-readiness-design.md`
+- `documentations/to-do.md`
 
 ## Installation
 

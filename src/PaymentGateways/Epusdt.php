@@ -58,7 +58,60 @@ class Epusdt extends BasePaymentGateway implements PaymentGatewayInterface
         }
     }
 
-    private function sign(array $parameters, string $signKey): string
+    public function verifyCallback(Request $request, ?Order $order = null): array
+    {
+        $eventId = trim((string) $request->input('trade_id', ''));
+        $signature = trim((string) $request->input('signature', ''));
+
+        if ($signature === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing signature',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        if (!$order) {
+            return [
+                'verified' => false,
+                'status' => 404,
+                'message' => 'order not found',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $secret = trim((string) ($order->payment_gateway?->client_secret ?: $this->paymentGateway->client_secret));
+        if ($secret === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing gateway secret',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $data = $request->except(['signature', 'payment_gateway']);
+        $computed = $this->sign($data, $secret);
+
+        if (!hash_equals($computed, $signature)) {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'signature mismatch',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        return [
+            'verified' => true,
+            'status' => 200,
+            'message' => 'verified',
+            'event_id' => $eventId !== '' ? $eventId : null,
+        ];
+    }
+
+    protected function sign(array $parameters, string $signKey): string
     {
         ksort($parameters);
         $sign = '';
@@ -77,41 +130,87 @@ class Epusdt extends BasePaymentGateway implements PaymentGatewayInterface
     public function notify(Request $request)
     {
         try {
+            $orderSlug = trim((string) $request->input('order_id', ''));
             $order = Order::query()
-                ->where('slug', $request->input('order_id'))
+                ->where('slug', $orderSlug)
                 ->first();
 
             if (!$order) {
-                info('Epusdt notify fail: order not found', ['order_id' => $request->input('order_id')]);
+                info('Epusdt callback rejected: order not found', $this->callbackContext($request, [
+                    'order_id' => $orderSlug !== '' ? $orderSlug : null,
+                    'event_id' => $request->input('trade_id'),
+                    'verification_result' => 'failed',
+                    'reason' => 'order not found',
+                ]));
                 return response('fail', 404);
             }
+
+            if ($order->payment_gateway_id && (int) $order->payment_gateway_id !== (int) $this->paymentGateway->id) {
+                info('Epusdt callback rejected: gateway mismatch', $this->callbackContext($request, [
+                    'order_id' => $order->id,
+                    'event_id' => $request->input('trade_id'),
+                    'verification_result' => 'failed',
+                    'reason' => 'gateway mismatch',
+                ]));
+                return response('fail', 400);
+            }
+
+            $verification = $this->verifyCallback($request, $order);
+            if (!$verification['verified']) {
+                info('Epusdt callback verification failed', $this->callbackContext($request, [
+                    'order_id' => $order->id,
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'failed',
+                    'reason' => $verification['message'],
+                ]));
+                return response('fail', (int) $verification['status']);
+            }
+
+            info('Epusdt callback verification passed', $this->callbackContext($request, [
+                'order_id' => $order->id,
+                'event_id' => $verification['event_id'],
+                'verification_result' => 'passed',
+            ]));
 
             if (!in_array($order->status, ['pending_payment', 'failed'], true)) {
                 return response('ok', 200);
             }
 
-            $data = $request->all();
-            unset($data['payment_gateway']);
-            $computed = $this->sign($data, (string) ($order->payment_gateway?->client_secret ?: $this->paymentGateway->client_secret));
+            $status = strtolower(trim((string) $request->input('status', '')));
+            $tradeId = trim((string) $request->input('trade_id', ''));
 
-            if (!hash_equals($computed, (string) $request->input('signature'))) {
-                info('Epusdt notify fail: signature mismatch', ['order_id' => $order->id]);
-                return response('fail', 400);
+            if (in_array($status, ['success', 'succeeded', 'paid', 'completed'], true)) {
+                OrderManager::markPaid($order, [
+                    'status' => 'succeeded',
+                    'external_id' => $tradeId !== '' ? $tradeId : null,
+                    'gateway_reference' => $tradeId !== '' ? $tradeId : null,
+                    'ref_id' => $tradeId !== '' ? $tradeId : null,
+                    'payment_method' => $this->paymentGateway->slug,
+                    'payload' => $request->all(),
+                    'processed_at' => now(),
+                ]);
+            } elseif (in_array($status, ['fail', 'failed', 'canceled', 'cancelled', 'denied', 'expired'], true)) {
+                OrderManager::markFailed($order, [
+                    'status' => 'failed',
+                    'external_id' => $tradeId !== '' ? $tradeId : null,
+                    'gateway_reference' => $tradeId !== '' ? $tradeId : null,
+                    'ref_id' => $tradeId !== '' ? $tradeId : null,
+                    'payment_method' => $this->paymentGateway->slug,
+                    'payload' => $request->all(),
+                    'processed_at' => now(),
+                ]);
+            } else {
+                info('Epusdt callback ignored: unsupported status', $this->callbackContext($request, [
+                    'order_id' => $order->id,
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'passed',
+                    'status' => $status,
+                ]));
             }
-
-            OrderManager::markPaid($order, [
-                'status' => 'succeeded',
-                'external_id' => $request->input('trade_id'),
-                'gateway_reference' => $request->input('trade_id'),
-                'ref_id' => $request->input('trade_id'),
-                'payment_method' => $this->paymentGateway->slug,
-                'payload' => $request->all(),
-                'processed_at' => now(),
-            ]);
 
             return response('ok', 200);
         } catch (\Throwable $e) {
-            info('Epusdt notify exception', [
+            info('Epusdt callback exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

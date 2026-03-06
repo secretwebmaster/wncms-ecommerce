@@ -90,20 +90,17 @@ class Stripe extends BasePaymentGateway implements PaymentGatewayInterface
     public function notify(Request $request)
     {
         try {
-            $payload = (string) $request->getContent();
-            $signatureHeader = (string) $request->header('Stripe-Signature', '');
-            $webhookSecret = trim((string) $this->paymentGateway->webhook_secret);
-
-            if ($webhookSecret === '' || !$this->isValidSignature($payload, $signatureHeader, $webhookSecret)) {
-                info('Stripe webhook signature invalid', [
-                    'gateway' => $this->paymentGateway->slug,
-                    'has_secret' => $webhookSecret !== '',
-                ]);
-
-                return response('invalid signature', 400);
+            $verification = $this->verifyCallback($request);
+            if (!$verification['verified']) {
+                info('Stripe callback verification failed', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'failed',
+                    'reason' => $verification['message'],
+                ]));
+                return response('invalid signature', (int) $verification['status']);
             }
 
-            $event = json_decode($payload, true);
+            $event = json_decode((string) $request->getContent(), true);
             if (!is_array($event)) {
                 return response('invalid payload', 400);
             }
@@ -116,7 +113,21 @@ class Stripe extends BasePaymentGateway implements PaymentGatewayInterface
 
             $order = $this->resolveOrder($eventObject);
             if (!$order) {
+                info('Stripe callback ignored: order not found', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'passed',
+                ]));
                 return response('ok', 200);
+            }
+
+            if ($order->payment_gateway_id && (int) $order->payment_gateway_id !== (int) $this->paymentGateway->id) {
+                info('Stripe callback rejected: gateway mismatch', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'order_id' => $order->id,
+                    'verification_result' => 'failed',
+                    'reason' => 'gateway mismatch',
+                ]));
+                return response('invalid gateway', 400);
             }
 
             $externalId = (string) (
@@ -125,6 +136,12 @@ class Stripe extends BasePaymentGateway implements PaymentGatewayInterface
                 ?: data_get($event, 'id')
                 ?: ('STRIPE-' . $order->slug)
             );
+
+            info('Stripe callback verification passed', $this->callbackContext($request, [
+                'event_id' => $verification['event_id'],
+                'order_id' => $order->id,
+                'verification_result' => 'passed',
+            ]));
 
             $transactionPayload = [
                 'source' => 'stripe_webhook',
@@ -157,13 +174,56 @@ class Stripe extends BasePaymentGateway implements PaymentGatewayInterface
 
             return response('ok', 200);
         } catch (\Throwable $e) {
-            info('Stripe notify exception', [
+            info('Stripe callback exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response('fail', 500);
         }
+    }
+
+    public function verifyCallback(Request $request, ?Order $order = null): array
+    {
+        $payload = (string) $request->getContent();
+        $event = json_decode($payload, true);
+        $eventId = is_array($event) ? trim((string) data_get($event, 'id', '')) : '';
+        $signatureHeader = (string) $request->header('Stripe-Signature', '');
+        $webhookSecret = trim((string) $this->paymentGateway->webhook_secret);
+
+        if ($webhookSecret === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing webhook secret',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        if (!$this->isValidSignature($payload, $signatureHeader, $webhookSecret)) {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'signature mismatch',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        if (!is_array($event)) {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'invalid payload',
+                'event_id' => null,
+            ];
+        }
+
+        return [
+            'verified' => true,
+            'status' => 200,
+            'message' => 'verified',
+            'event_id' => $eventId !== '' ? $eventId : null,
+        ];
     }
 
     protected function resolveOrder(array $eventObject): ?Order

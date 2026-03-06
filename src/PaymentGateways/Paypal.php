@@ -201,6 +201,17 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
     public function notify(Request $request)
     {
         try {
+            $verification = $this->verifyCallback($request);
+            if (!$verification['verified']) {
+                info('PayPal callback verification failed', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'failed',
+                    'reason' => $verification['message'],
+                ]));
+
+                return response('invalid signature', (int) $verification['status']);
+            }
+
             $eventType = strtoupper((string) $request->input('event_type', ''));
             $resource = $request->input('resource');
 
@@ -224,8 +235,28 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
                 $order = Order::query()->find((int) $orderRef);
             }
             if (!$order) {
+                info('PayPal callback ignored: order not found', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'verification_result' => 'passed',
+                ]));
                 return response('ok', 200);
             }
+
+            if ($order->payment_gateway_id && (int) $order->payment_gateway_id !== (int) $this->paymentGateway->id) {
+                info('PayPal callback rejected: gateway mismatch', $this->callbackContext($request, [
+                    'event_id' => $verification['event_id'],
+                    'order_id' => $order->id,
+                    'verification_result' => 'failed',
+                    'reason' => 'gateway mismatch',
+                ]));
+                return response('invalid gateway', 400);
+            }
+
+            info('PayPal callback verification passed', $this->callbackContext($request, [
+                'event_id' => $verification['event_id'],
+                'order_id' => $order->id,
+                'verification_result' => 'passed',
+            ]));
 
             $externalId = (string) (
                 data_get($resource, 'id')
@@ -233,6 +264,14 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
                 ?: data_get($resource, 'supplementary_data.related_ids.order_id')
                 ?: ('PAYPAL-' . $order->slug)
             );
+
+            if (!in_array($order->status, ['pending_payment', 'failed', 'paid', 'completed'], true)) {
+                return response('ok', 200);
+            }
+
+            if ($externalId !== '' && $order->transactions()->where('external_id', $externalId)->exists()) {
+                return response('ok', 200);
+            }
 
             if (str_contains($eventType, 'COMPLETED')) {
                 OrderManager::markPaid($order, [
@@ -266,13 +305,112 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
 
             return response('ok', 200);
         } catch (\Throwable $e) {
-            info('PayPal notify exception', [
+            info('PayPal callback exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response('fail', 500);
         }
+    }
+
+    public function verifyCallback(Request $request, ?Order $order = null): array
+    {
+        $webhookEvent = $request->json()->all();
+        $eventId = trim((string) data_get($webhookEvent, 'id', ''));
+
+        if (!is_array($webhookEvent) || empty($webhookEvent)) {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'invalid payload',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        [$clientId, $clientSecret] = $this->credentials();
+        if ($clientId === '' || $clientSecret === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing credentials',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $webhookId = $this->resolveWebhookId();
+        if ($webhookId === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing webhook id',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $transmissionId = trim((string) $request->header('PayPal-Transmission-Id', ''));
+        $transmissionTime = trim((string) $request->header('PayPal-Transmission-Time', ''));
+        $transmissionSig = trim((string) $request->header('PayPal-Transmission-Sig', ''));
+        $certUrl = trim((string) $request->header('PayPal-Cert-Url', ''));
+        $authAlgo = trim((string) $request->header('PayPal-Auth-Algo', ''));
+
+        if ($transmissionId === '' || $transmissionTime === '' || $transmissionSig === '' || $certUrl === '' || $authAlgo === '') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'missing paypal transmission headers',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $accessToken = $this->requestAccessToken($clientId, $clientSecret);
+        if ($accessToken === null) {
+            return [
+                'verified' => false,
+                'status' => 502,
+                'message' => 'failed to request access token',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $verifyResponse = Http::timeout(20)
+            ->withToken($accessToken)
+            ->acceptJson()
+            ->post($this->apiBaseUrl() . '/v1/notifications/verify-webhook-signature', [
+                'transmission_id' => $transmissionId,
+                'transmission_time' => $transmissionTime,
+                'cert_url' => $certUrl,
+                'auth_algo' => $authAlgo,
+                'transmission_sig' => $transmissionSig,
+                'webhook_id' => $webhookId,
+                'webhook_event' => $webhookEvent,
+            ]);
+
+        if (!$verifyResponse->successful()) {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'paypal verification request failed',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        $verificationStatus = strtoupper((string) data_get($verifyResponse->json(), 'verification_status', ''));
+        if ($verificationStatus !== 'SUCCESS') {
+            return [
+                'verified' => false,
+                'status' => 400,
+                'message' => 'paypal verification failed',
+                'event_id' => $eventId !== '' ? $eventId : null,
+            ];
+        }
+
+        return [
+            'verified' => true,
+            'status' => 200,
+            'message' => 'verified',
+            'event_id' => $eventId !== '' ? $eventId : null,
+        ];
     }
 
     protected function credentials(): array
@@ -318,6 +456,21 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
 
         $accessToken = (string) data_get($response->json(), 'access_token');
         return $accessToken !== '' ? $accessToken : null;
+    }
+
+    protected function resolveWebhookId(): string
+    {
+        $webhookId = trim((string) $this->paymentGateway->webhook_secret);
+
+        if ($webhookId === '') {
+            $webhookId = trim((string) $this->paymentGateway->getParameter('paypal_webhook_id', ''));
+        }
+
+        if ($webhookId === '' && function_exists('gss')) {
+            $webhookId = trim((string) gss('ecommerce_paypal_webhook_id'));
+        }
+
+        return $webhookId;
     }
 
     protected function apiBaseUrl(): string

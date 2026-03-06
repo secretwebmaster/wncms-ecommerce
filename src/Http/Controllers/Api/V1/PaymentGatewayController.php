@@ -3,6 +3,7 @@
 namespace Secretwebmaster\WncmsEcommerce\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
+use Secretwebmaster\WncmsEcommerce\Interfaces\PaymentGatewayInterface;
 use Secretwebmaster\WncmsEcommerce\Models\PaymentGateway;
 use Wncms\Http\Controllers\Controller;
 
@@ -24,7 +25,7 @@ class PaymentGatewayController extends Controller
         }
 
         $processor = $paymentGateway->processor();
-        if (!$processor) {
+        if (!$processor || !($processor instanceof PaymentGatewayInterface)) {
             info("Process class of {$paymentGateway->slug} is not found");
             return response()->json(['error' => "Process class of {$paymentGateway->slug} is not found"], 404);
         }
