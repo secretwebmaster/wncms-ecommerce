@@ -3,11 +3,13 @@
 namespace Secretwebmaster\WncmsEcommerce\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Wncms\Translatable\Traits\HasTranslations;
 use Wncms\Models\BaseModel;
 
 class Discount extends BaseModel
 {
     use HasFactory;
+    use HasTranslations;
 
     /**
      * ----------------------------------------------------------------------------------------------------
@@ -19,6 +21,7 @@ class Discount extends BaseModel
     public static $modelKey = 'discount';
 
     protected $guarded = [];
+    protected $translatable = ['name'];
 
     protected $casts = [
         'value' => 'decimal:2',

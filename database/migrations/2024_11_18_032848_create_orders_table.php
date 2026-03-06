@@ -17,7 +17,13 @@ return new class extends Migration
                 $table->string('slug')->unique();
                 $table->foreignId('user_id')->constrained()->cascadeOnDelete();
                 $table->string('status')->default('pending_payment');
+                $table->string('order_type')->default('one_time'); // one_time, subscription_initial, subscription_renewal
+                $table->string('billing_reason')->nullable(); // purchase, renewal, setup_fee, manual
                 $table->decimal('total_amount', 10, 2);
+                $table->decimal('subtotal_amount', 10, 2)->default(0);
+                $table->decimal('tax_amount', 10, 2)->default(0);
+                $table->decimal('discount_amount', 10, 2)->default(0);
+                $table->string('currency', 10)->default('USD');
                 $table->string('payment_method')->nullable();
 
                 // coupon
@@ -34,6 +40,11 @@ return new class extends Migration
                 // payment gateway
                 $table->foreignId('payment_gateway_id')->nullable()->constrained()->nullOnDelete();
                 $table->string('tracking_code')->nullable();
+                $table->string('gateway_reference')->nullable();
+                $table->unsignedBigInteger('subscription_id')->nullable()->index();
+                $table->timestamp('paid_at')->nullable();
+                $table->timestamp('failed_at')->nullable();
+                $table->json('payload')->nullable();
 
                 $table->text('remark')->nullable();
                 $table->timestamps();

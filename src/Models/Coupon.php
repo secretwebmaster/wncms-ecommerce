@@ -2,11 +2,12 @@
 
 namespace Secretwebmaster\WncmsEcommerce\Models;
 
+use Wncms\Translatable\Traits\HasTranslations;
 use Wncms\Models\BaseModel;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Coupon extends BaseModel
 {
+    use HasTranslations;
+
     /**
      * ----------------------------------------------------------------------------------------------------
      * Propertyies
@@ -17,6 +18,7 @@ class Coupon extends BaseModel
     public static $modelKey = 'coupon';
 
     protected $guarded = [];
+    protected $translatable = ['name'];
 
     public const ICONS = [
         'fontawesome' => 'fa-solid fa-ticket'
@@ -29,6 +31,18 @@ class Coupon extends BaseModel
      */
     public function isAvailable()
     {
-        dd('isAvailable logic');
+        if (($this->status ?? 'active') !== 'active') {
+            return false;
+        }
+
+        if (!empty($this->expired_at) && now()->gt($this->expired_at)) {
+            return false;
+        }
+
+        if (!empty($this->used_limit) && !empty($this->used_count) && $this->used_count >= $this->used_limit) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -15,11 +15,19 @@ return new class extends Migration
             Schema::create('transactions', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-                $table->string('status');
+                $table->unsignedBigInteger('subscription_id')->nullable()->index();
+                $table->foreignId('payment_gateway_id')->nullable()->constrained()->nullOnDelete();
+                $table->string('type')->default('charge'); // charge, renewal, refund, adjustment
+                $table->string('direction')->default('debit'); // debit, credit
+                $table->string('status')->default('pending'); // pending, succeeded, failed, refunded, cancelled
                 $table->decimal('amount', 10, 2);
+                $table->string('currency', 10)->default('USD');
                 $table->string('payment_method')->nullable();
+                $table->string('external_id')->nullable()->unique();
                 $table->string('ref_id')->nullable();
                 $table->boolean('is_fraud')->default(false);
+                $table->timestamp('processed_at')->nullable();
+                $table->json('payload')->nullable();
                 $table->timestamps();
             });
         }

@@ -3,26 +3,22 @@
 namespace Secretwebmaster\WncmsEcommerce\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Wncms\Models\BaseModel;
 
 class Price extends BaseModel
 {
     use HasFactory;
 
-    /**
-     * ----------------------------------------------------------------------------------------------------
-     * Propertyies
-     * ----------------------------------------------------------------------------------------------------
-     */
     public static $packageId = 'wncms-ecommerce';
-
     public static $modelKey = 'price';
-    
+
     protected $guarded = [];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'amount' => 'decimal:2',
         'attributes' => 'array',
+        'is_lifetime' => 'boolean',
     ];
 
     public const DURATION_UNITS = [
@@ -33,43 +29,19 @@ class Price extends BaseModel
     ];
 
     public const ICONS = [
-        'fontawesome' => 'fa-solid fa-cube'
+        'fontawesome' => 'fa-solid fa-cube',
     ];
 
-    public const ROUTES = [];
-
-    /**
-     * ----------------------------------------------------------------------------------------------------
-     * Relationships
-     * ----------------------------------------------------------------------------------------------------
-     */
-    public function priceable()
+    public function priceable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function plan()
-    {
-        return $this->belongsTo(wncms()->getModelClass('plan'));
-    }
-
-    /**
-     * ----------------------------------------------------------------------------------------------------
-     * Methods
-     * ----------------------------------------------------------------------------------------------------
-     */
-    
-    /**
-     * Scope for lifetime prices.
-     */
     public function scopeLifetime($query)
     {
         return $query->where('is_lifetime', true);
     }
 
-    /**
-     * Scope for regular prices (non-lifetime).
-     */
     public function scopeRegular($query)
     {
         return $query->where('is_lifetime', false);

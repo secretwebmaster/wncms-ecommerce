@@ -18,11 +18,16 @@ return new class extends Migration
                 $table->string('name');
                 $table->string('slug')->unique();
                 $table->string('type'); // redirect, inline
+                $table->string('driver')->nullable(); // paypal, stripe, epusdt
 
                 $table->string('account_id')->nullable();
                 $table->string('client_id')->nullable();
                 $table->string('client_secret')->nullable();
+                $table->string('webhook_secret')->nullable();
                 $table->string('endpoint')->nullable();
+                $table->string('return_url')->nullable();
+                $table->string('currency', 10)->default('USD');
+                $table->boolean('is_sandbox')->default(true);
                 $table->json('attributes')->nullable();
 
                 $table->text('description')->nullable();

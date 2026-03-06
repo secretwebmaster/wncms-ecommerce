@@ -16,8 +16,16 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('order_id')->constrained()->cascadeOnDelete();
                 $table->morphs('order_itemable');
+                $table->string('name')->nullable();
+                $table->string('sku')->nullable();
+                $table->string('currency', 10)->default('USD');
                 $table->integer('quantity')->default(1);
+                $table->decimal('unit_amount', 10, 2)->default(0);
                 $table->decimal('amount', 10, 2);
+                $table->decimal('total_amount', 10, 2)->default(0);
+                $table->unsignedInteger('billing_interval_count')->nullable();
+                $table->string('billing_interval')->nullable(); // day, week, month, year
+                $table->json('attributes')->nullable();
                 $table->timestamps();
             });
         }
