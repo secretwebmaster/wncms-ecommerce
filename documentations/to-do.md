@@ -34,7 +34,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC2 | PayPal return/capture finalization contract | P0 | yes | completed | codex | 2026-03-06T12:15:49Z | 2026-03-06T12:17:17Z | EC1 |
 | EC3 | Additive migration strategy for backward-compatible upgrades | P0 | yes | completed | codex | 2026-03-06T12:17:47Z | 2026-03-06T12:19:49Z | EC1 |
 | EC4 | Gateway config validation + secret handling hardening | P1 | yes | completed | codex | 2026-03-06T12:20:10Z | 2026-03-06T12:22:47Z | EC1 |
-| EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | todo | - | - | - | EC2, EC3 |
+| EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | completed | codex | 2026-03-06T12:23:10Z | 2026-03-06T12:25:13Z | EC2, EC3 |
 | EC6 | Automated test matrix + CI release gate | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4 |
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | todo | - | - | - | EC6 |
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
@@ -138,7 +138,13 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - Overdue subscriptions move through policy states automatically.
   - Successful repayment reactivates and advances billing window.
 - Verification notes:
-  - pending
+  - Added lifecycle state progression in `PlanManager::advanceLifecycleStates()` for `past_due -> grace -> suspended`.
+  - Added lifecycle audit trail (`attributes.lifecycle_events`) with `event/source/reason/at`.
+  - Added automatic pending-renewal order failure marking on suspension (idempotent via deterministic `external_id`).
+  - Added command `wncms-ecommerce:advance-subscriptions` and registered it in service provider.
+  - Updated subscription status model constants to include `grace` and `suspended`; renewal scope includes `grace`.
+  - Updated lifecycle docs and README command list.
+  - Verification commands: `php -l` passed for updated manager/command/model/provider files.
 - Blocker:
   - none
 

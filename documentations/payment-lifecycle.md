@@ -16,7 +16,8 @@
 2. On paid callback, `PlanManager::activateFromPaidOrder()` creates/updates subscription
 3. Scheduler/command runs `wncms-ecommerce:renew-subscriptions`
 4. Due subscriptions create `order_type=subscription_renewal` and enter `past_due`
-5. Renewal payment callback marks order paid and advances subscription period
+5. Scheduler/command runs `wncms-ecommerce:advance-subscriptions` to move overdue subscriptions through `grace`/`suspended`
+6. Renewal payment callback marks order paid and advances subscription period (reactivation supported from `past_due`/`grace`/`suspended`)
 
 ## Statuses
 
@@ -45,6 +46,8 @@
 - `trialing`
 - `active`
 - `past_due`
+- `grace`
+- `suspended`
 - `cancelled`
 - `expired`
 

@@ -65,6 +65,17 @@ class PlanManager
                 : null;
 
             if ($subscription) {
+                $attributes = is_array($subscription->attributes) ? $subscription->attributes : [];
+                if (in_array($subscription->status, ['past_due', 'grace', 'suspended'], true)) {
+                    $attributes = $this->appendLifecycleEvent(
+                        $attributes,
+                        'reactivated',
+                        'callback',
+                        'paid_subscription_order',
+                        ['from_status' => $subscription->status, 'order_id' => $order->id]
+                    );
+                }
+
                 $subscription->update([
                     'status' => 'active',
                     'amount' => $order->total_amount,
@@ -80,8 +91,17 @@ class PlanManager
                     'expired_at' => null,
                     'cancelled_at' => null,
                     'cancel_at_period_end' => false,
+                    'attributes' => $attributes,
                 ]);
             } else {
+                $attributes = $this->appendLifecycleEvent(
+                    [],
+                    'created',
+                    'callback',
+                    'paid_subscription_order',
+                    ['order_id' => $order->id]
+                );
+
                 $subscription = Subscription::create([
                     'user_id' => $order->user_id,
                     'plan_id' => $plan->id,
@@ -100,6 +120,7 @@ class PlanManager
                     'current_period_end' => $periodEnd,
                     'next_billing_at' => $periodEnd,
                     'trial_ends_at' => ($plan->free_trial_duration ?? 0) > 0 ? $startAt->copy()->addDays((int) $plan->free_trial_duration) : null,
+                    'attributes' => $attributes,
                 ]);
 
                 $order->update(['subscription_id' => $subscription->id]);
@@ -226,9 +247,98 @@ class PlanManager
         return $created;
     }
 
+    public function advanceLifecycleStates(): array
+    {
+        $result = [
+            'to_grace' => 0,
+            'to_suspended' => 0,
+            'failed_orders' => 0,
+        ];
+        $orderManager = app('order-manager');
+        $now = now();
+
+        Subscription::query()
+            ->whereIn('status', ['past_due', 'grace'])
+            ->whereNotNull('next_billing_at')
+            ->with('payment_gateway')
+            ->chunkById((int) config('wncms-ecommerce.lifecycle_chunk_size', 100), function ($subscriptions) use (&$result, $orderManager, $now) {
+                foreach ($subscriptions as $subscription) {
+                    if (!$subscription->next_billing_at) {
+                        continue;
+                    }
+
+                    $graceDays = max(0, (int) ($subscription->grace_days ?: config('wncms-ecommerce.default_grace_days', 3)));
+                    $graceDeadline = $subscription->next_billing_at->copy()->addDays($graceDays);
+
+                    if ($now->lessThanOrEqualTo($graceDeadline)) {
+                        if ($subscription->status !== 'grace') {
+                            $attributes = is_array($subscription->attributes) ? $subscription->attributes : [];
+                            $attributes = $this->appendLifecycleEvent(
+                                $attributes,
+                                'grace_entered',
+                                'scheduler',
+                                'renewal_unpaid',
+                                ['grace_deadline' => $graceDeadline->toDateTimeString()]
+                            );
+
+                            $subscription->update([
+                                'status' => 'grace',
+                                'attributes' => $attributes,
+                            ]);
+                            $result['to_grace']++;
+                        }
+                        continue;
+                    }
+
+                    if ($subscription->status !== 'suspended') {
+                        $pendingRenewals = Order::query()
+                            ->where('subscription_id', $subscription->id)
+                            ->where('order_type', 'subscription_renewal')
+                            ->where('status', 'pending_payment')
+                            ->get();
+
+                        foreach ($pendingRenewals as $order) {
+                            $externalId = 'AUTO-SUSPEND-' . $order->id;
+                            $orderManager->markFailed($order, [
+                                'status' => 'failed',
+                                'external_id' => $externalId,
+                                'gateway_reference' => $externalId,
+                                'ref_id' => $externalId,
+                                'payment_method' => $subscription->payment_gateway?->slug ?? $order->payment_method,
+                                'payload' => [
+                                    'source' => 'subscription_lifecycle_scheduler',
+                                    'reason' => 'grace_expired',
+                                    'subscription_id' => $subscription->id,
+                                ],
+                            ]);
+                            $result['failed_orders']++;
+                        }
+
+                        $attributes = is_array($subscription->attributes) ? $subscription->attributes : [];
+                        $attributes = $this->appendLifecycleEvent(
+                            $attributes,
+                            'suspended',
+                            'scheduler',
+                            'grace_expired',
+                            ['grace_deadline' => $graceDeadline->toDateTimeString()]
+                        );
+
+                        $subscription->update([
+                            'status' => 'suspended',
+                            'expired_at' => $now,
+                            'attributes' => $attributes,
+                        ]);
+                        $result['to_suspended']++;
+                    }
+                }
+            });
+
+        return $result;
+    }
+
     public function canSubscribe($user, $plan, $price = null): bool
     {
-        if ($user->subscriptions()->where('plan_id', $plan->id)->whereIn('status', ['active', 'trialing'])->exists()) {
+        if ($user->subscriptions()->where('plan_id', $plan->id)->whereIn('status', ['active', 'trialing', 'grace'])->exists()) {
             return false;
         }
 
@@ -311,5 +421,23 @@ class PlanManager
         }
 
         return $plan;
+    }
+
+    protected function appendLifecycleEvent(array $attributes, string $event, string $source, string $reason, array $extra = []): array
+    {
+        $events = $attributes['lifecycle_events'] ?? [];
+        if (!is_array($events)) {
+            $events = [];
+        }
+
+        $events[] = array_merge([
+            'event' => $event,
+            'source' => $source,
+            'reason' => $reason,
+            'at' => now()->toDateTimeString(),
+        ], $extra);
+
+        $attributes['lifecycle_events'] = array_slice($events, -50);
+        return $attributes;
     }
 }

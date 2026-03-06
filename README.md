@@ -28,6 +28,7 @@ composer require secretwebmaster/wncms-ecommerce
 ```bash
 php artisan wncms-ecommerce:pay-order {orderSlug} {paymentGatewaySlug}
 php artisan wncms-ecommerce:renew-subscriptions
+php artisan wncms-ecommerce:advance-subscriptions
 ```
 
 ## Design Goal

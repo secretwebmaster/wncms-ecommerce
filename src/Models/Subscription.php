@@ -39,6 +39,8 @@ class Subscription extends BaseModel
         'trialing',
         'active',
         'past_due',
+        'grace',
+        'suspended',
         'cancelled',
         'expired',
     ];
@@ -76,7 +78,7 @@ class Subscription extends BaseModel
     public function scopeDueForRenewal($query)
     {
         return $query
-            ->whereIn('status', ['active', 'past_due'])
+            ->whereIn('status', ['active', 'past_due', 'grace'])
             ->whereNotNull('next_billing_at')
             ->where('next_billing_at', '<=', now());
     }

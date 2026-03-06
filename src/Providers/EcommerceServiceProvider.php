@@ -203,6 +203,7 @@ class EcommerceServiceProvider extends ServiceProvider
             $this->commands([
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\PayOrder::class,
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\RenewSubscriptions::class,
+                \Secretwebmaster\WncmsEcommerce\Console\Commands\AdvanceSubscriptions::class,
             ]);
         }
 
