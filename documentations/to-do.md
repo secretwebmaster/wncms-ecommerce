@@ -31,7 +31,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | id | title | priority | release_blocker | status | assignee | started_at_utc | completed_at_utc | dependencies |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | EC1 | Callback trust model + webhook verification hardening | P0 | yes | completed | codex | 2026-03-06T11:51:38Z | 2026-03-06T11:57:12Z | - |
-| EC2 | PayPal return/capture finalization contract | P0 | yes | todo | - | - | - | EC1 |
+| EC2 | PayPal return/capture finalization contract | P0 | yes | completed | codex | 2026-03-06T12:15:49Z | 2026-03-06T12:17:17Z | EC1 |
 | EC3 | Additive migration strategy for backward-compatible upgrades | P0 | yes | todo | - | - | - | EC1 |
 | EC4 | Gateway config validation + secret handling hardening | P1 | yes | todo | - | - | - | EC1 |
 | EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | todo | - | - | - | EC2, EC3 |
@@ -82,7 +82,12 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - `process -> return -> capture` completes deterministically.
   - Wrong token cannot finalize another order.
 - Verification notes:
-  - pending
+  - Added authenticated frontend routes `frontend.orders.paypal.return` and `frontend.orders.paypal.cancel`.
+  - Added `OrderController::paypalReturn()` and `paypalCancel()` to finalize/handle PayPal redirect explicitly.
+  - Hardened `Paypal::capture()` with gateway-id check and strict returned-token vs `order.tracking_code` binding.
+  - Updated PayPal cancel URL resolver to use new package cancel route.
+  - Updated lifecycle doc to reflect return/capture + verify-before-mutation flow.
+  - Verification commands: `php -l` passed for `routes/frontend.php`, `src/Http/Controllers/Frontend/OrderController.php`, and `src/PaymentGateways/Paypal.php`.
 - Blocker:
   - none
 

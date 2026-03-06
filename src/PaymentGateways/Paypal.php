@@ -102,6 +102,25 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
                 return ['success' => false, 'message' => __('wncms::word.tgp_paypal_callback_missing_token')];
             }
 
+            if ($order->payment_gateway_id && (int) $order->payment_gateway_id !== (int) $this->paymentGateway->id) {
+                info('PayPal capture failed: gateway mismatch', [
+                    'order_id' => $order->id,
+                    'order_gateway_id' => $order->payment_gateway_id,
+                    'callback_gateway_id' => $this->paymentGateway->id,
+                ]);
+                return ['success' => false, 'message' => __('wncms::word.tgp_paypal_capture_failed')];
+            }
+
+            $expectedToken = trim((string) $order->tracking_code);
+            if ($expectedToken !== '' && !hash_equals($expectedToken, $paypalToken)) {
+                info('PayPal capture failed: token/order mismatch', [
+                    'order_id' => $order->id,
+                    'expected_token' => $expectedToken,
+                    'received_token' => $paypalToken,
+                ]);
+                return ['success' => false, 'message' => __('wncms::word.tgp_paypal_capture_failed')];
+            }
+
             [$clientId, $clientSecret] = $this->credentials();
             if ($clientId === '' || $clientSecret === '') {
                 info('PayPal capture failed: missing credentials', [
@@ -564,6 +583,10 @@ class Paypal extends BasePaymentGateway implements PaymentGatewayInterface
 
     protected function resolveCancelUrl(Order $order): string
     {
+        if (Route::has('frontend.orders.paypal.cancel')) {
+            return route('frontend.orders.paypal.cancel', ['slug' => $order->slug]);
+        }
+
         if (Route::has('frontend.orders.waiting')) {
             return route('frontend.orders.waiting', ['slug' => $order->slug]);
         }

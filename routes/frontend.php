@@ -35,6 +35,8 @@ Route::name('frontend.')->middleware('is_installed', 'has_website')->group(funct
             Route::post('/create', 'create')->name('orders.create');
             Route::get('/{slug}', 'show')->name('orders.show');
             Route::post('/{slug}/pay', 'pay')->name('orders.pay');
+            Route::get('/{slug}/paypal/return', 'paypalReturn')->name('orders.paypal.return');
+            Route::get('/{slug}/paypal/cancel', 'paypalCancel')->name('orders.paypal.cancel');
             Route::get('/{slug}/success', 'success')->name('orders.success');
             Route::post('/status', 'status')->name('orders.status');
         });

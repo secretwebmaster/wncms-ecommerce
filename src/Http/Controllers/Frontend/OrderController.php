@@ -139,4 +139,46 @@ class OrderController extends FrontendController
             'status' => $order->status,
         ]);
     }
+
+    public function paypalReturn(Request $request, string $slug)
+    {
+        $order = Order::where('user_id', auth()->id())->where('slug', $slug)->first();
+        if (!$order || $order->user_id != auth()->id()) {
+            return redirect()->route('frontend.orders.index')
+                ->with('error', __('wncms::word.no_records_found'));
+        }
+
+        $paymentGateway = $order->payment_gateway;
+        if (!$paymentGateway) {
+            return redirect()->route('frontend.orders.show', ['slug' => $order->slug])
+                ->with('error', __('wncms::word.tgp_paypal_capture_failed'));
+        }
+
+        $processor = $paymentGateway->processor();
+        if (!$processor || !method_exists($processor, 'capture')) {
+            return redirect()->route('frontend.orders.show', ['slug' => $order->slug])
+                ->with('error', __('wncms::word.tgp_paypal_capture_failed'));
+        }
+
+        $result = $processor->capture($order, $request);
+
+        if ((bool) ($result['success'] ?? false)) {
+            return redirect()->route('frontend.orders.success', ['slug' => $order->slug]);
+        }
+
+        return redirect()->route('frontend.orders.show', ['slug' => $order->slug])
+            ->with('error', (string) ($result['message'] ?? __('wncms::word.tgp_paypal_capture_failed')));
+    }
+
+    public function paypalCancel(Request $request, string $slug)
+    {
+        $order = Order::where('user_id', auth()->id())->where('slug', $slug)->first();
+        if (!$order || $order->user_id != auth()->id()) {
+            return redirect()->route('frontend.orders.index')
+                ->with('error', __('wncms::word.no_records_found'));
+        }
+
+        return redirect()->route('frontend.orders.show', ['slug' => $order->slug])
+            ->with('error', __('wncms::word.cancelled'));
+    }
 }
