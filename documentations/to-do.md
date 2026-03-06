@@ -24,7 +24,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 
 | task_id | assignee | started_at_utc | notes |
 | --- | --- | --- | --- |
-| EC13 | codex | 2026-03-06T23:57:39Z | Cut and push v1.0.4-alpha1 release tag for live-project testing |
+| EC13 | codex | 2026-03-06T23:57:39Z | Blocked on GitHub auth in current environment; release commit/tag prepared locally |
 
 ## Task Registry
 
@@ -42,7 +42,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC10 | Fix backend payment gateway controller method signature compatibility | P0 | yes | completed | codex | 2026-03-06T12:55:48Z | 2026-03-06T12:55:48Z | EC4 |
 | EC11 | Normalize backend sorting naming to `sort` and fix OrderController constant usage | P0 | yes | completed | codex | 2026-03-06T14:17:24Z | 2026-03-06T14:17:24Z | EC10 |
 | EC12 | Fix transaction status translation and status-set consistency | P0 | yes | completed | codex | 2026-03-06T15:32:28Z | 2026-03-06T15:32:28Z | EC6 |
-| EC13 | Prepare and push release tag `v1.0.4-alpha1` | P0 | yes | in_progress | codex | 2026-03-06T23:57:39Z | - | EC9, EC10, EC11, EC12 |
+| EC13 | Prepare and push release tag `v1.0.4-alpha1` | P0 | yes | blocked | codex | 2026-03-06T23:57:39Z | - | EC9, EC10, EC11, EC12 |
 
 ## Execution Order
 
@@ -304,6 +304,9 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - `v1.0.4-alpha1` tag exists on remote and points to release commit.
   - Release metadata reflects alpha version.
 - Verification notes:
-  - pending
+  - Created release commit `966c4e1` (`chore(release): prepare v1.0.4-alpha1`) with changelog + package metadata update.
+  - Created local annotated git tag `v1.0.4-alpha1`.
+  - Push attempt failed due missing GitHub credentials in this environment:
+    - `fatal: could not read Username for 'https://github.com': No such device or address`
 - Blocker:
-  - none
+  - Git remote auth unavailable in execution environment; requires authenticated push from user environment or configured credentials/token.
