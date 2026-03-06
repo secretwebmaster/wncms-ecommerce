@@ -21,6 +21,8 @@ Route::prefix('panel')->middleware(['auth', 'is_installed', 'has_website'])->gro
     Route::get('payment_gateways/create', [PaymentGatewayController::class, 'create'])->middleware('can:payment_gateway_create')->name('payment_gateways.create');
     Route::get('payment_gateways/create/{id}', [PaymentGatewayController::class, 'create'])->middleware('can:payment_gateway_clone')->name('payment_gateways.clone');
     Route::get('payment_gateways/{id}/edit', [PaymentGatewayController::class, 'edit'])->middleware('can:payment_gateway_edit')->name('payment_gateways.edit');
+    Route::get('payment_gateways/{id}/paypal/connect', [PaymentGatewayController::class, 'paypalConnect'])->middleware('can:payment_gateway_edit')->name('payment_gateways.paypal.connect');
+    Route::get('payment_gateways/{id}/paypal/callback', [PaymentGatewayController::class, 'paypalCallback'])->middleware('can:payment_gateway_edit')->name('payment_gateways.paypal.callback');
     Route::post('payment_gateways/store', [PaymentGatewayController::class, 'store'])->middleware('can:payment_gateway_create')->name('payment_gateways.store');
     Route::patch('payment_gateways/{id}', [PaymentGatewayController::class, 'update'])->middleware('can:payment_gateway_edit')->name('payment_gateways.update');
     Route::delete('payment_gateways/{id}', [PaymentGatewayController::class, 'destroy'])->middleware('can:payment_gateway_delete')->name('payment_gateways.destroy');

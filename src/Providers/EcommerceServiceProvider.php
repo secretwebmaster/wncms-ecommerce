@@ -94,18 +94,8 @@ class EcommerceServiceProvider extends ServiceProvider
             'base' => __DIR__ . '/../../',
 
             'info' => [
-                'name' => [
-                    'en'    => 'E-commerce',
-                    'zh_TW' => '電子商務',
-                    'zh_CN' => '电子商务',
-                    'ja'    => 'Eコマース',
-                ],
-                'description' => [
-                    'en'    => 'Manage products, orders, transactions, payments, and subscriptions.',
-                    'zh_TW' => '管理商品、訂單、交易、付款與訂閱。',
-                    'zh_CN' => '管理商品、订单、交易、支付与订阅。',
-                    'ja'    => '商品、注文、取引、支払い、サブスクリプションを管理します。',
-                ],
+                'name' => 'E-commerce',
+                'description' => 'Manage products, orders, transactions, payments, and subscriptions.',
                 'version' => '1.0.0',
                 'author'  => 'Secretwebmaster',
                 'icon'    => 'fa-solid fa-cart-shopping',
@@ -150,10 +140,7 @@ class EcommerceServiceProvider extends ServiceProvider
                     'permission' => 'product_index',
                     'items' => [
                         ['name' => ['en' => 'Product List', 'zh_TW' => '商品列表', 'zh_CN' => '商品列表', 'ja' => '商品一覧'], 'route' => 'products.index', 'permission' => 'product_index'],
-                        // ['name' => ['en' => 'Create Product', 'zh_TW' => '新增商品', 'zh_CN' => '新增商品', 'ja' => '商品を追加'], 'route' => 'products.create', 'permission' => 'product_create'],
                         ['name' => ['en' => 'Discounts', 'zh_TW' => '折扣', 'zh_CN' => '折扣', 'ja' => '割引'], 'route' => 'discounts.index', 'permission' => 'discount_index'],
-                        ['name' => ['en' => 'Prices', 'zh_TW' => '價格', 'zh_CN' => '价格', 'ja' => '価格'], 'route' => 'prices.index', 'permission' => 'price_index'],
-                        ['name' => ['en' => 'Coupons', 'zh_TW' => '優惠券', 'zh_CN' => '优惠券', 'ja' => 'クーポン'], 'route' => 'coupons.index', 'permission' => 'discount_index'],
                     ],
                 ],
                 [
@@ -215,6 +202,7 @@ class EcommerceServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Secretwebmaster\WncmsEcommerce\Console\Commands\PayOrder::class,
+                \Secretwebmaster\WncmsEcommerce\Console\Commands\RenewSubscriptions::class,
             ]);
         }
 

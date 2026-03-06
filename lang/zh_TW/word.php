@@ -99,5 +99,20 @@ return [
     // Error / Misc
     'plan_not_found' => '找不到方案',
     'unknown' => '未知',
-    
+
+    // Settings tab: payment gateways
+    'ecommerce_payment_gateway_setting' => '電商支付閘道',
+    'paypal' => 'PayPal',
+    'future_gateways' => '後續閘道',
+
+    'ecommerce_paypal_enabled' => '啟用 PayPal',
+    'ecommerce_paypal_mode' => 'PayPal 模式',
+    'ecommerce_paypal_client_id' => 'PayPal Client ID',
+    'ecommerce_paypal_client_secret' => 'PayPal Client Secret',
+    'ecommerce_paypal_webhook_id' => 'PayPal Webhook ID',
+    'ecommerce_paypal_base_url' => 'PayPal API Base URL',
+
+    'ecommerce_stripe_api_key' => 'Stripe API Key',
+    'ecommerce_stripchat_api_key' => 'Stripchat API Key',
+    'ecommerce_epusdt_api_key' => 'EPUSDT API Key',
 ];

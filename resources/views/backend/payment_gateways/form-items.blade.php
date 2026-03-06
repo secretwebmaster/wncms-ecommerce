@@ -1,4 +1,30 @@
 <div class="card-body border-top p-3 p-md-9">
+    @php
+        $gatewaySlug = trim((string) old('slug', $paymentGateway->slug ?? ''));
+        $gatewayDriver = strtolower((string) old('driver', $paymentGateway->driver ?? ''));
+        $isPaypalGateway = $gatewayDriver === 'paypal' || str_starts_with(strtolower($gatewaySlug), 'paypal');
+        $sandboxValue = (string) old('is_sandbox', isset($paymentGateway->is_sandbox) ? (int) $paymentGateway->is_sandbox : 1);
+        $paypalMode = $sandboxValue === '0' ? 'live' : 'sandbox';
+        $callbackPreview = (!empty($paymentGateway->slug) ? $paymentGateway->getNotifyUrl() : null)
+            ?: \Secretwebmaster\WncmsEcommerce\Models\PaymentGateway::buildNotifyUrlTemplate();
+    @endphp
+
+    {{-- Fixed callback URL --}}
+    <div class="row mb-3">
+        <label class="col-lg-3 col-form-label fw-bold fs-6" for="callback_url_preview">@lang('wncms::word.tgp_payment_callback_url')</label>
+        <div class="col-lg-9 fv-row">
+            <input
+                id="callback_url_preview"
+                type="text"
+                class="form-control form-control-sm"
+                value="{{ $callbackPreview }}"
+                readonly
+                disabled
+            />
+            <div class="text-muted small mt-2">@lang('wncms::word.tgp_payment_callback_url_help')</div>
+        </div>
+    </div>
+
     {{-- Status --}}
     <div class="row mb-3">
         <label class="col-lg-3 col-form-label required fw-bold fs-6" for="status">@lang('wncms::word.status')</label>
@@ -65,6 +91,53 @@
         </div>
     </div>
 
+    @if ($isPaypalGateway)
+        <div class="row mb-3">
+            <label class="col-lg-3 col-form-label fw-bold fs-6" for="is_sandbox">@lang('wncms::word.tgp_paypal_mode')</label>
+            <div class="col-lg-9 fv-row">
+                <select id="is_sandbox" name="is_sandbox" class="form-select form-select-sm">
+                    <option value="1" {{ $sandboxValue === '1' ? 'selected' : '' }}>@lang('wncms::word.tgp_sandbox')</option>
+                    <option value="0" {{ $sandboxValue === '0' ? 'selected' : '' }}>@lang('wncms::word.tgp_live')</option>
+                </select>
+            </div>
+        </div>
+    @endif
+
+    @if ($isPaypalGateway && !empty($paymentGateway->id))
+        <div class="row mb-3">
+            <label class="col-lg-3 col-form-label fw-bold fs-6">@lang('wncms::word.paypal')</label>
+            <div class="col-lg-9 fv-row">
+                <button
+                    type="button"
+                    id="btn-paypal-connect"
+                    class="btn btn-sm btn-primary"
+                    data-connect-url="{{ route('payment_gateways.paypal.connect', ['id' => $paymentGateway->id, 'mode' => $paypalMode]) }}"
+                >
+                    @lang('wncms::word.tgp_paypal_connect')
+                </button>
+                <div class="text-muted small mt-2">
+                    @lang('wncms::word.tgp_paypal_connect_help')
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Optional custom return URL --}}
+    <div class="row mb-3">
+        <label class="col-lg-3 col-form-label fw-bold fs-6" for="return_url">@lang('wncms::word.tgp_return_url')</label>
+        <div class="col-lg-9 fv-row">
+            <input
+                id="return_url"
+                type="text"
+                name="return_url"
+                class="form-control form-control-sm"
+                value="{{ old('return_url', $paymentGateway->return_url ?? '') }}"
+                placeholder="https://thegreatpage.com/orders/{order_slug}/success"
+            />
+            <div class="text-muted small mt-2">@lang('wncms::word.tgp_return_url_help')</div>
+        </div>
+    </div>
+
     {{-- Endpoint --}}
     <div class="row mb-3">
         <label class="col-lg-3 col-form-label fw-bold fs-6" for="endpoint">@lang('wncms::word.endpoint')</label>
@@ -120,6 +193,9 @@
             const container = document.getElementById('attributes-container');
             const template = container.querySelector('.template');
             let rowIndex = {{ count($attributes ?? []) }}; // Start with existing attributes count
+            const callbackPreviewInput = document.getElementById('callback_url_preview');
+            const slugInput = document.getElementById('slug');
+            const callbackBase = @json(rtrim(url('/v1/payment/notify'), '/'));
     
             // Add new attribute row
             document.getElementById('btn-add-attribute').addEventListener('click', function () {
@@ -144,6 +220,52 @@
                     input.value = e.target.dataset.value;
                 }
             });
+
+            const updateCallbackPreview = function () {
+                if (!callbackPreviewInput || !slugInput) {
+                    return;
+                }
+
+                const slug = (slugInput.value || '').trim();
+                if (!slug) {
+                    callbackPreviewInput.value = callbackBase + '/{slug}';
+                    return;
+                }
+
+                callbackPreviewInput.value = callbackBase + '/' + encodeURIComponent(slug);
+            };
+            updateCallbackPreview();
+            if (slugInput) {
+                slugInput.addEventListener('input', updateCallbackPreview);
+                slugInput.addEventListener('change', updateCallbackPreview);
+            }
+
+            const paypalBtn = document.getElementById('btn-paypal-connect');
+            if (paypalBtn) {
+                paypalBtn.addEventListener('click', function () {
+                    let connectUrl = paypalBtn.getAttribute('data-connect-url');
+                    const modeSelect = document.getElementById('is_sandbox');
+                    if (modeSelect && connectUrl) {
+                        const mode = modeSelect.value === '0' ? 'live' : 'sandbox';
+                        const url = new URL(connectUrl, window.location.origin);
+                        url.searchParams.set('mode', mode);
+                        connectUrl = url.toString();
+                    }
+
+                    const popup = window.open(connectUrl, 'paypal_connect_popup', 'width=560,height=760');
+                    if (!popup) {
+                        alert(@json(__('wncms::word.tgp_paypal_connect_popup_blocked')));
+                        return;
+                    }
+
+                    const checker = window.setInterval(function () {
+                        if (popup.closed) {
+                            window.clearInterval(checker);
+                            window.location.reload();
+                        }
+                    }, 900);
+                });
+            }
         });
     </script>
     

@@ -13,141 +13,110 @@ class Epusdt extends BasePaymentGateway implements PaymentGatewayInterface
     public function process($orderId)
     {
         try {
-            // find order
             $order = $this->checkOrder($orderId);
 
-            // data
             $parameters = [
-                "amount" => (float)$order->total_amount,
-                "order_id" => $order->slug,
+                'amount' => (float) $order->total_amount,
+                'order_id' => $order->slug,
                 'redirect_url' => route('frontend.orders.success', ['slug' => $order->slug]),
-                'notify_url' => route('api.v1.payment.notify', ['payment_gateway' => $this->paymentGateway->slug]),
+                'notify_url' => route('api.v1.payment.notify.gateway', ['payment_gateway' => $this->paymentGateway->slug]),
             ];
 
-            // fetch api
-            $parameters['signature'] = $this->sign($parameters, $this->paymentGateway->client_secret);
-            $apiUrl = rtrim($this->paymentGateway->endpoint, "/") . "/api/v1/order/create-transaction";
-            $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($apiUrl, $parameters);
+            $parameters['signature'] = $this->sign($parameters, (string) $this->paymentGateway->client_secret);
 
-            // get result
+            $apiUrl = rtrim((string) $this->paymentGateway->endpoint, '/') . '/api/v1/order/create-transaction';
+            $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($apiUrl, $parameters);
             $result = $response->json();
 
-            // error
-            if (!isset($result['status_code'])) {
-                dd("no status code", $result);
+            if (!is_array($result) || !isset($result['status_code'])) {
+                info('Epusdt process invalid response', ['order_id' => $order->id, 'response' => $result]);
+                return redirect()->back()->with('error', 'Invalid response from payment gateway.');
             }
 
-            // new order
-            if ($result['status_code'] == 200) {
+            if ((int) $result['status_code'] === 200) {
                 $order->update([
                     'payment_gateway_id' => $this->paymentGateway->id,
-                    'tracking_code' => $result['data']['trade_id'],
+                    'tracking_code' => data_get($result, 'data.trade_id'),
+                    'gateway_reference' => data_get($result, 'data.trade_id'),
                 ]);
 
-                $payment_url = $result['data']['payment_url'];
+                $paymentUrl = data_get($result, 'data.payment_url');
+                if ($paymentUrl) {
+                    return redirect()->away($paymentUrl);
+                }
             }
 
-            // existing order
-            elseif ($result['status_code'] == 10002 && $order->tracking_code) {
-                $payment_url = rtrim($this->paymentGateway->endpoint, "/") . "/pay/checkout-counter/" . $order->tracking_code;
-            } else {
-                dd('handle other status code', $result);
+            if ((int) $result['status_code'] === 10002 && $order->tracking_code) {
+                return redirect()->away(rtrim((string) $this->paymentGateway->endpoint, '/') . '/pay/checkout-counter/' . $order->tracking_code);
             }
 
-            return redirect()->away($payment_url);
-        } catch (\Exception $e) {
-            info($e->getMessage());
-            return redirect()->back()->with('error', 'Error in payment process:' . $e->getMessage());
+            info('Epusdt process unsupported status', ['order_id' => $order->id, 'response' => $result]);
+            return redirect()->back()->with('error', 'Payment gateway returned unsupported status.');
+        } catch (\Throwable $e) {
+            info('Epusdt process exception', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error in payment process: ' . $e->getMessage());
         }
     }
 
-    private function sign(array $parameters, string $signKey)
+    private function sign(array $parameters, string $signKey): string
     {
         ksort($parameters);
-        reset($parameters);
         $sign = '';
-        $urls = '';
+
         foreach ($parameters as $key => $val) {
-            if ($val == '') continue;
-            if ($key != 'signature') {
-                if ($sign != '') {
-                    $sign .= "&";
-                    $urls .= "&";
-                }
-                $sign .= "$key=$val";
-                $urls .= "$key=" . urlencode($val);
+            if ($val === '' || $key === 'signature') {
+                continue;
             }
+
+            $sign .= ($sign !== '' ? '&' : '') . "$key=$val";
         }
-        $sign = md5($sign . $signKey);
-        return $sign;
+
+        return md5($sign . $signKey);
     }
 
     public function notify(Request $request)
     {
         try {
-            info('Epusdt notify started', [
-                'payload' => $request->all(),
-            ]);
-    
-            // Step 1 — Find order
-            $order = Order::where('status', 'pending_payment')
-                ->where('slug', $request->order_id)
+            $order = Order::query()
+                ->where('slug', $request->input('order_id'))
                 ->first();
-    
+
             if (!$order) {
-                info('Epusdt notify fail: order not found or not pending_payment', [
-                    'order_id' => $request->order_id,
-                ]);
-                return 'fail';
+                info('Epusdt notify fail: order not found', ['order_id' => $request->input('order_id')]);
+                return response('fail', 404);
             }
-    
-            info('Epusdt notify step 1 ok: order found', [
-                'order_id' => $order->id,
-                'status' => $order->status,
-            ]);
-    
-            // Step 2 — Check signature
+
+            if (!in_array($order->status, ['pending_payment', 'failed'], true)) {
+                return response('ok', 200);
+            }
+
             $data = $request->all();
             unset($data['payment_gateway']);
-            $sign = $this->sign($data, $order->payment_gateway->client_secret);
-    
-            info('Epusdt notify computed sign', [
-                'computed' => $sign,
-                'received' => $request->signature,
-            ]);
-    
-            if ($sign !== $request->signature) {
-                info('Epusdt notify fail: signature mismatch');
-                return 'fail';
+            $computed = $this->sign($data, (string) ($order->payment_gateway?->client_secret ?: $this->paymentGateway->client_secret));
+
+            if (!hash_equals($computed, (string) $request->input('signature'))) {
+                info('Epusdt notify fail: signature mismatch', ['order_id' => $order->id]);
+                return response('fail', 400);
             }
-    
-            info('Epusdt notify step 2 ok: signature verified');
-    
-            // Step 3 — Process order completion
-            $result = OrderManager::complete($order, $data['trade_id']);
-            info('Epusdt notify OrderManager result', [
-                'result' => $result,
-                'trade_id' => $data['trade_id'] ?? null,
+
+            OrderManager::markPaid($order, [
+                'status' => 'succeeded',
+                'external_id' => $request->input('trade_id'),
+                'gateway_reference' => $request->input('trade_id'),
+                'ref_id' => $request->input('trade_id'),
+                'payment_method' => $this->paymentGateway->slug,
+                'payload' => $request->all(),
+                'processed_at' => now(),
             ]);
-    
-            if (!$result) {
-                info('Epusdt notify fail: OrderManager returned false');
-                return 'fail';
-            }
-    
-            // Step 4 — Success
-            info('Epusdt notify success', [
-                'order_id' => $order->id,
-            ]);
-            return 'ok';
-    
-        } catch (\Exception $e) {
+
+            return response('ok', 200);
+        } catch (\Throwable $e) {
             info('Epusdt notify exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            return 'fail';
+
+            return response('fail', 500);
         }
     }
-    
 }
