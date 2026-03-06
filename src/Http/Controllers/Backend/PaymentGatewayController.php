@@ -43,9 +43,11 @@ class PaymentGatewayController extends BackendController
         ]);
     }
 
-    public function store(PaymentGatewayFormRequest $request)
+    public function store(Request $request)
     {
-        $slug = trim((string) $request->input('slug'));
+        $validated = $request->validate((new PaymentGatewayFormRequest())->rulesFor());
+
+        $slug = trim((string) ($validated['slug'] ?? ''));
         $driver = trim((string) $request->input('driver', ''));
         $driver = $driver !== '' ? $driver : $slug;
         $attributes = $this->normalizeAttributeRows($request->input('attributes', []));
@@ -89,14 +91,16 @@ class PaymentGatewayController extends BackendController
         ]);
     }
 
-    public function update(PaymentGatewayFormRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $paymentGateway = $this->modelClass::find($id);
         if (!$paymentGateway) {
             return back()->withMessage(__('wncms::word.model_not_found', ['model_name' => __('wncms::word.' . $this->singular)]));
         }
 
-        $slug = trim((string) $request->input('slug'));
+        $validated = $request->validate((new PaymentGatewayFormRequest())->rulesFor($id));
+
+        $slug = trim((string) ($validated['slug'] ?? ''));
         $driver = trim((string) $request->input('driver', ''));
         $driver = $driver !== '' ? $driver : ($paymentGateway->driver ?: $slug);
         $attributes = $this->normalizeAttributeRows($request->input('attributes', []));

@@ -14,8 +14,11 @@ class PaymentGatewayFormRequest extends FormRequest
 
     public function rules()
     {
-        $id = $this->route('id');
+        return $this->rulesFor($this->route('id'));
+    }
 
+    public function rulesFor($id = null): array
+    {
         return [
             'status' => 'required|in:active,inactive',
             'name' => 'required|string|max:255',

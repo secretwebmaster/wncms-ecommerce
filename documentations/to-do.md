@@ -39,6 +39,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | completed | codex | 2026-03-06T12:29:09Z | 2026-03-06T12:30:32Z | EC6 |
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | completed | codex | 2026-03-06T12:30:56Z | 2026-03-06T12:34:15Z | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
 | EC9 | Add ECPay (綠界) gateway integration | P1 | no | completed | codex | 2026-03-06T12:42:24Z | 2026-03-06T12:49:19Z | EC1 |
+| EC10 | Fix backend payment gateway controller method signature compatibility | P0 | yes | completed | codex | 2026-03-06T12:55:48Z | 2026-03-06T12:55:48Z | EC4 |
 
 ## Execution Order
 
@@ -51,6 +52,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 7. EC7
 8. EC8
 9. EC9
+10. EC10
 
 ## Task Details
 
@@ -229,5 +231,22 @@ Purpose: this is the shared execution board for production hardening of `secretw
     - `php -l database/seeders/PaymentGatewaySeeder.php`
     - `php -l tests/Feature/GatewayVerificationTest.php`
     - `php -l lang/en/word.php lang/zh_TW/word.php lang/zh_CN/word.php lang/ja/word.php`
+- Blocker:
+  - none
+
+### EC10. Fix backend payment gateway controller method signature compatibility
+
+- Scope:
+  - Resolve fatal error caused by child controller method signatures that were narrower than parent `BackendController` signatures.
+  - Keep gateway validation behavior unchanged after signature fix.
+- Acceptance:
+  - Payment gateway backend controller class loads without fatal signature mismatch.
+  - `store`/`update` still validate requests with `PaymentGatewayFormRequest` rules.
+- Verification notes:
+  - Updated `PaymentGatewayController::store()` and `update()` signatures to use `Illuminate\Http\Request` so they are compatible with `BackendController`.
+  - Added `PaymentGatewayFormRequest::rulesFor($id = null)` and reused it from both `rules()` and controller runtime validation calls.
+  - Verification commands:
+    - `php -l src/Http/Controllers/Backend/PaymentGatewayController.php`
+    - `php -l src/Http/Requests/PaymentGatewayFormRequest.php`
 - Blocker:
   - none
