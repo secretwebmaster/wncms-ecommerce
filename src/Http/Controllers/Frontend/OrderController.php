@@ -4,6 +4,7 @@ namespace Secretwebmaster\WncmsEcommerce\Http\Controllers\Frontend;
 
 use Illuminate\Http\Request;
 use Wncms\Http\Controllers\Frontend\FrontendController;
+use Secretwebmaster\WncmsEcommerce\Facades\OrderManager;
 use Secretwebmaster\WncmsEcommerce\Models\Order;
 use Secretwebmaster\WncmsEcommerce\Models\OrderItem;
 use Secretwebmaster\WncmsEcommerce\Models\Product;
@@ -19,7 +20,7 @@ class OrderController extends FrontendController
         $orders = Order::where('user_id', auth()->id())->latest()->paginate(20);
 
         return $this->view(
-            "frontend.themes.{$this->theme}.orders.index",
+            "{$this->theme}::orders.index",
             compact('orders'),
             'wncms-ecommerce::frontend.orders.index',
         );
@@ -40,7 +41,7 @@ class OrderController extends FrontendController
         $paymentGateways = PaymentGateway::where('status', 'active')->get();
 
         return $this->view(
-            "frontend.themes.{$this->theme}.orders.show",
+            "{$this->theme}::orders.show",
             [
                 'order' => $order,
                 'paymentGateways' => $paymentGateways,
@@ -91,7 +92,17 @@ class OrderController extends FrontendController
             ->first();
 
         if ($paymentGateway) {
-            return $paymentGateway->processor()->process($order->id);
+            $order = OrderManager::refreshTotals($order);
+            if ((float) $order->total_amount <= 0) {
+                return back()->with('error', __('wncms::word.tgp_order_not_payable'));
+            }
+
+            $processor = $paymentGateway->processor();
+            if ($processor && method_exists($processor, 'process')) {
+                return $processor->process($order->id);
+            }
+
+            return back()->with('error', __('wncms-ecommerce::word.payment_gateway_not_found'));
         }
 
         return back()->with('error', __('wncms-ecommerce::word.payment_gateway_not_found'));
@@ -109,7 +120,7 @@ class OrderController extends FrontendController
         }
         
         return $this->view(
-            "frontend.themes.{$this->theme}.orders.success",
+            "{$this->theme}::orders.success",
             ['order' => $order],
             'wncms-ecommerce::frontend.orders.success',
         );

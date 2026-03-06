@@ -24,7 +24,7 @@ class SubscriptionController extends FrontendController
 
 
         return $this->view(
-            "frontend.themes.{$this->theme}.users.subscriptions",
+            "{$this->theme}::users.subscriptions",
             [
                 'subscriptions' => $subscriptions,
                 'user' => $user,
@@ -49,12 +49,12 @@ class SubscriptionController extends FrontendController
             ->firstOrFail();
 
         return $this->view(
-            "frontend.themes.{$this->theme}.users.subscriptions.show",
+            "{$this->theme}::users.subscriptions.show",
             [
                 'subscription' => $subscription,
                 'user' => $user,
             ],
-            'wncms-ecommerce::frontend.users.subscriptions.show',
+            'wncms-ecommerce::frontend.subscriptions.show',
         );
     }
 }

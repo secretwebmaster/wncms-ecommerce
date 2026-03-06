@@ -21,10 +21,17 @@ class ProductController extends FrontendController
             'cache' => true,
         ]);
 
+        if (!$product) {
+            $product = $manager->get([
+                'slug'  => $slug,
+                'cache' => false,
+            ]);
+        }
+
         abort_unless($product, 404);
 
         return $this->view(
-            "frontend.themes.{$this->theme}.products.show",
+            "{$this->theme}::products.show",
             compact('product'),
             'wncms-ecommerce::frontend.products.show'
         );
@@ -47,7 +54,7 @@ class ProductController extends FrontendController
         ]);
 
         return $this->view(
-            "frontend.themes.{$this->theme}.products.index",
+            "{$this->theme}::products.index",
             compact('products'),
             'wncms-ecommerce::frontend.products.index'
         );
@@ -84,7 +91,7 @@ class ProductController extends FrontendController
         ]);
 
         return $this->view(
-            "frontend.themes.{$this->theme}.products.tag",
+            "{$this->theme}::products.tag",
             compact('tag', 'type', 'products'),
             'wncms-ecommerce::frontend.products.tag'
         );

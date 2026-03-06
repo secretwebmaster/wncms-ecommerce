@@ -18,18 +18,7 @@ class PlanController extends FrontendController
         parent::__construct();
         $this->middleware(function ($request, $next) {
             if (!wncms()->isPackageActive('wncms-ecommerce')) {
-
-                // debug back
-                abort (500,__('wncms::word.package_is_not_activated', ['package_id' => 'wncms-ecommerce']));
-                die;
-
-                // return back if has previous url and previous url is not current url
-                if (url()->previous() && url()->previous() !== url()->current()) {
-                    return back();
-                }
-
-                // Otherwise, abort 404
-                abort(404);
+                abort(500, __('wncms::word.package_is_not_activated', ['package_id' => 'wncms-ecommerce']));
             }
             return $next($request);
         });
@@ -46,7 +35,7 @@ class PlanController extends FrontendController
         return $this->view(
             "{$this->theme}::plans.index",
             compact('plans'),
-            'wncms-ecommerce::frontend.themes.default.plans.index'
+            'wncms-ecommerce::frontend.plans.index'
         );
     }
 
@@ -64,7 +53,7 @@ class PlanController extends FrontendController
         return $this->view(
             "{$this->theme}::plans.show",
             compact('plan', 'user'),
-            'wncms-ecommerce::frontend.themes.default.plans.show'
+            'wncms-ecommerce::frontend.plans.show'
         );
     }
 
@@ -102,7 +91,7 @@ class PlanController extends FrontendController
             }
 
             $user->credits()->where('type', 'balance')->first()?->decrement('amount', $price->amount);
-            return redirect()->route('frontend.users.subscription')->with('message', __('wncms-ecommerce::word.subscribed_successfully'));
+            return redirect()->route('frontend.users.subscriptions.index')->with('message', __('wncms-ecommerce::word.subscribed_successfully'));
         }
 
         // Otherwise, create order
@@ -122,7 +111,7 @@ class PlanController extends FrontendController
 
         try {
             PlanManager::unsubscribe(auth()->user(), $subscriptionId);
-            return redirect()->route('frontend.users.subscription')->with('message', __('wncms-ecommerce::word.unsubscribed_successfully'));
+            return redirect()->route('frontend.users.subscriptions.index')->with('message', __('wncms-ecommerce::word.unsubscribed_successfully'));
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }

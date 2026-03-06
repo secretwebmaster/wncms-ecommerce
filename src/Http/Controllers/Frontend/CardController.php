@@ -14,10 +14,13 @@ class CardController extends FrontendController
      */
     public function show()
     {
+        $user = auth()->user();
+        $balance = (float) ($user?->credits()->where('type', 'balance')->first()?->amount ?? 0);
+
         return $this->view(
-            "frontend.themes.{$this->theme}.users.card",
-            [],
-            'wncms::frontend.themes.default.users.card',
+            "{$this->theme}::users.card",
+            ['balance' => $balance],
+            'wncms-ecommerce::frontend.users.card',
         );
     }
 
@@ -47,11 +50,9 @@ class CardController extends FrontendController
             $credit->amount += $card->value;
             $credit->save();
         } elseif ($card->type === 'plan' && $card->plan_id) {
-            dd('get plan and assign to user or extend expired_at');
+            return redirect()->back()->with('error', __('Plan card redemption is not implemented yet.'));
         } elseif ($card->type === 'product' && $card->product_id) {
-            dd('get product');
-            // Logic for assigning product to the user
-            // $user->products()->attach($card->product_id); // Assuming a many-to-many relationship
+            return redirect()->back()->with('error', __('Product card redemption is not implemented yet.'));
         }
 
         // Save user changes
@@ -64,7 +65,11 @@ class CardController extends FrontendController
             'user_id' => $user->id, // Optional: track which user used the card
         ]);
 
-        // Redirect back with a success message
-        return redirect()->back()->withMessage(__('wncms::word.successfully_used_card'));
+        $latestBalance = (float) ($user->credits()->where('type', 'balance')->first()?->amount ?? 0);
+
+        return redirect()->back()->with(
+            'success',
+            __('wncms::word.tgp_card_redeemed_success_with_balance', ['balance' => number_format($latestBalance, 2)])
+        );
     }
 }
