@@ -3,6 +3,7 @@
         $gatewaySlug = trim((string) old('slug', $paymentGateway->slug ?? ''));
         $gatewayDriver = strtolower((string) old('driver', $paymentGateway->driver ?? ''));
         $isPaypalGateway = $gatewayDriver === 'paypal' || str_starts_with(strtolower($gatewaySlug), 'paypal');
+        $isEcpayGateway = $gatewayDriver === 'ecpay' || str_starts_with(strtolower($gatewaySlug), 'ecpay');
         $sandboxValue = (string) old('is_sandbox', isset($paymentGateway->is_sandbox) ? (int) $paymentGateway->is_sandbox : 1);
         $paypalMode = $sandboxValue === '0' ? 'live' : 'sandbox';
         $callbackPreview = (!empty($paymentGateway->slug) ? $paymentGateway->getNotifyUrl() : null)
@@ -80,6 +81,9 @@
         <label class="col-lg-3 col-form-label fw-bold fs-6" for="client_id">@lang('wncms::word.client_id')</label>
         <div class="col-lg-9 fv-row">
             <input id="client_id" type="text" name="client_id" class="form-control form-control-sm" value="{{ old('client_id', $paymentGateway->client_id ?? '') }}" />
+            @if ($isEcpayGateway)
+                <div class="text-muted small mt-2">@lang('wncms-ecommerce::word.ecpay_credential_mapping_hint')</div>
+            @endif
         </div>
     </div>
 

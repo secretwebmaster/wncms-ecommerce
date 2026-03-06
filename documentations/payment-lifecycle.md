@@ -3,12 +3,13 @@
 ## One-time Flow
 
 1. Create order via `OrderManager::createOneTimeOrder()`
-2. Redirect to selected gateway processor `process()`
+2. Redirect to selected gateway processor `process()` (PayPal/Stripe/EPUSDT/ECPay)
 3. For PayPal, return route (`frontend.orders.paypal.return`) captures checkout token and validates token/order binding.
-4. Gateway callback hits `api.v1.payment.notify(.gateway)`
-5. Processor verifies callback authenticity first, then calls `OrderManager::markPaid()`/`markFailed()`
-6. Order becomes `paid` (or `completed` after downstream handling)
-7. Transaction is recorded idempotently with stable `external_id`
+4. For ECPay, user is redirected by hosted auto-submit form to ECPay checkout.
+5. Gateway callback hits `api.v1.payment.notify(.gateway)`
+6. Processor verifies callback authenticity first, then calls `OrderManager::markPaid()`/`markFailed()`
+7. Order becomes `paid` (or `completed` after downstream handling)
+8. Transaction is recorded idempotently with stable `external_id`
 
 ## Recurring Flow
 

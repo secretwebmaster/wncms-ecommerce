@@ -6,7 +6,7 @@
 
 - One-time checkout: `Order`, `OrderItem`, `Transaction`
 - Recurring subscriptions: `Plan`, `Subscription`, renewal orders
-- Payment gateway processing: `PaymentGateway` + processor classes
+- Payment gateway processing: `PaymentGateway` + processor classes (`PayPal`, `Stripe`, `EPUSDT`, `ECPay`)
 
 ## Requirements
 
@@ -26,6 +26,10 @@ After installation:
 
 - confirm backend payment gateway pages load
 - configure gateway credentials in backend settings
+- ECPay credential mapping:
+  - `client_id` => `MerchantID`
+  - `client_secret` => `HashKey`
+  - `webhook_secret` => `HashIV`
 
 ## Upgrade (Existing Project)
 

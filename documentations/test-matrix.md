@@ -6,6 +6,7 @@
   - Stripe: missing/invalid signature rejected
   - EPUSDT: invalid signature rejected, valid signature accepted
   - PayPal: webhook verification failure rejected
+  - ECPay: invalid `CheckMacValue` rejected, valid signature accepted
 - Checkout finalization:
   - PayPal return token mismatch rejected
 - Idempotency:

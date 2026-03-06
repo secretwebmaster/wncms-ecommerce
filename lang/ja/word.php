@@ -15,6 +15,9 @@ return [
     'ecommerce_stripe_api_key' => 'Stripe APIキー',
     'ecommerce_stripchat_api_key' => 'Stripchat APIキー',
     'ecommerce_epusdt_api_key' => 'EPUSDT APIキー',
+    'ecpay_gateway_credentials_required' => 'ECPay ゲートウェイには MerchantID・HashKey・HashIV が必要です。',
+    'ecpay_checkout_start_failed' => 'ECPay チェックアウトの開始に失敗しました。',
+    'ecpay_credential_mapping_hint' => 'ECPay マッピング: client_id=MerchantID、client_secret=HashKey、webhook_secret=HashIV。',
     'webhook_secret_or_id' => 'Webhook Secret / ID',
     'invalid_return_url' => 'Return URL は絶対 URL か / で始まるパスである必要があります',
 ];

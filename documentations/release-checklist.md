@@ -34,6 +34,7 @@ Executed at (UTC): `____________`
 - [ ] PayPal return capture path validated.
 - [ ] PayPal webhook verification pass/fail paths validated.
 - [ ] EPUSDT callback signature verification validated.
+- [ ] ECPay callback `CheckMacValue` verification pass/fail paths validated.
 
 ## 5. Subscription Lifecycle
 

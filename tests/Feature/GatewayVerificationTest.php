@@ -5,6 +5,7 @@ namespace Secretwebmaster\WncmsEcommerce\Tests\Feature;
 use Illuminate\Http\Request;
 use Secretwebmaster\WncmsEcommerce\Models\Order;
 use Secretwebmaster\WncmsEcommerce\Models\PaymentGateway;
+use Secretwebmaster\WncmsEcommerce\PaymentGateways\Ecpay;
 use Secretwebmaster\WncmsEcommerce\PaymentGateways\Epusdt;
 use Secretwebmaster\WncmsEcommerce\PaymentGateways\Paypal;
 use Secretwebmaster\WncmsEcommerce\PaymentGateways\Stripe;
@@ -102,6 +103,85 @@ class GatewayVerificationTest extends TestCase
         $this->assertFalse((bool) ($result['success'] ?? false));
     }
 
+    public function test_ecpay_verification_passes_with_valid_check_mac(): void
+    {
+        $gateway = new PaymentGateway();
+        $gateway->forceFill([
+            'slug' => 'ecpay',
+            'client_id' => '3002607',
+            'client_secret' => '5294y06JbISpM5x9',
+            'webhook_secret' => 'v77hoKGq4kWxNNIS',
+        ]);
+
+        $order = new Order();
+        $order->forceFill([
+            'id' => 201,
+            'slug' => 'ORD-201',
+            'status' => 'pending_payment',
+            'tracking_code' => 'WNO201',
+            'total_amount' => 100,
+        ]);
+
+        $payload = [
+            'MerchantID' => '3002607',
+            'MerchantTradeNo' => 'WNO201',
+            'TradeNo' => '2301010000001',
+            'TradeAmt' => '100',
+            'RtnCode' => '1',
+            'RtnMsg' => 'Succeeded',
+            'PaymentDate' => '2026/03/06 20:00:00',
+            'PaymentType' => 'Credit_CreditCard',
+        ];
+        $payload['CheckMacValue'] = $this->ecpayCheckMac(
+            $payload,
+            '5294y06JbISpM5x9',
+            'v77hoKGq4kWxNNIS'
+        );
+
+        $request = Request::create('/v1/payment/notify/ecpay', 'POST', $payload);
+
+        $processor = new Ecpay($gateway);
+        $result = $processor->verifyCallback($request, $order);
+
+        $this->assertTrue($result['verified']);
+        $this->assertSame('verified', $result['message']);
+    }
+
+    public function test_ecpay_verification_fails_with_invalid_check_mac(): void
+    {
+        $gateway = new PaymentGateway();
+        $gateway->forceFill([
+            'slug' => 'ecpay',
+            'client_id' => '3002607',
+            'client_secret' => '5294y06JbISpM5x9',
+            'webhook_secret' => 'v77hoKGq4kWxNNIS',
+        ]);
+
+        $order = new Order();
+        $order->forceFill([
+            'id' => 202,
+            'slug' => 'ORD-202',
+            'status' => 'pending_payment',
+            'tracking_code' => 'WNO202',
+            'total_amount' => 200,
+        ]);
+
+        $request = Request::create('/v1/payment/notify/ecpay', 'POST', [
+            'MerchantID' => '3002607',
+            'MerchantTradeNo' => 'WNO202',
+            'TradeNo' => '2301010000002',
+            'TradeAmt' => '200',
+            'RtnCode' => '1',
+            'CheckMacValue' => 'INVALIDMAC',
+        ]);
+
+        $processor = new Ecpay($gateway);
+        $result = $processor->verifyCallback($request, $order);
+
+        $this->assertFalse($result['verified']);
+        $this->assertSame('check mac mismatch', $result['message']);
+    }
+
     protected function epusdtSign(array $payload, string $secret): string
     {
         ksort($payload);
@@ -114,5 +194,26 @@ class GatewayVerificationTest extends TestCase
         }
 
         return md5(implode('&', $parts) . $secret);
+    }
+
+    protected function ecpayCheckMac(array $payload, string $hashKey, string $hashIv): string
+    {
+        unset($payload['CheckMacValue']);
+        ksort($payload);
+
+        $pairs = [];
+        foreach ($payload as $key => $value) {
+            $pairs[] = $key . '=' . $value;
+        }
+
+        $raw = 'HashKey=' . $hashKey . '&' . implode('&', $pairs) . '&HashIV=' . $hashIv;
+        $encoded = strtolower(urlencode($raw));
+        $encoded = str_replace(
+            ['%2d', '%5f', '%2e', '%21', '%2a', '%28', '%29'],
+            ['-', '_', '.', '!', '*', '(', ')'],
+            $encoded
+        );
+
+        return strtoupper(hash('sha256', $encoded));
     }
 }

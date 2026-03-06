@@ -13,6 +13,7 @@ Checklist:
    - Stripe: `webhook_secret`
    - PayPal: webhook id (`webhook_secret`/configured webhook id)
    - EPUSDT: `client_secret`
+   - ECPay: `client_id=MerchantID`, `client_secret=HashKey`, `webhook_secret=HashIV`
 2. Confirm callback URL matches current gateway slug.
 3. Re-send callback from gateway dashboard once config is corrected.
 4. Review logs by `correlation_id`, `gateway`, `event_id`, `verification_result`.

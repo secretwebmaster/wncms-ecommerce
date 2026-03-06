@@ -6,7 +6,9 @@ All notable changes to `secretwebmaster/wncms-ecommerce` are documented in this 
 
 ### Added
 
-- Pending
+- ECPay (綠界) hosted checkout gateway processor with callback signature verification.
+- ECPay seed defaults (`ecpay`, `ecpay_stage`) and hosted redirect view.
+- ECPay verification coverage in gateway feature tests and operator/test docs.
 
 ## [1.1.0-rc.1] - 2026-03-06
 

@@ -38,6 +38,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC6 | Automated test matrix + CI release gate | P0 | yes | completed | codex | 2026-03-06T12:25:34Z | 2026-03-06T12:28:38Z | EC1, EC2, EC3, EC4 |
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | completed | codex | 2026-03-06T12:29:09Z | 2026-03-06T12:30:32Z | EC6 |
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | completed | codex | 2026-03-06T12:30:56Z | 2026-03-06T12:34:15Z | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
+| EC9 | Add ECPay (綠界) gateway integration | P1 | no | completed | codex | 2026-03-06T12:42:24Z | 2026-03-06T12:49:19Z | EC1 |
 
 ## Execution Order
 
@@ -49,6 +50,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 6. EC6
 7. EC7
 8. EC8
+9. EC9
 
 ## Task Details
 
@@ -201,5 +203,31 @@ Purpose: this is the shared execution board for production hardening of `secretw
   - Verification commands:
     - `php -l src/Providers/EcommerceServiceProvider.php`
     - `php -l database/migrations/2026_03_06_121800_add_backward_compatibility_columns_for_billing_refactor.php`
+- Blocker:
+  - none
+
+### EC9. Add ECPay (綠界) gateway integration
+
+- Scope:
+  - Add `Ecpay` processor implementation for hosted redirect flow.
+  - Add callback verification and idempotent notify handling.
+  - Add default ECPay gateway seed records and documentation updates.
+  - Add automated verification tests for ECPay signature handling.
+- Acceptance:
+  - User can initiate checkout via ECPay redirect flow.
+  - Callback verification blocks invalid signature payloads.
+  - Valid callback marks orders paid/failed idempotently.
+- Verification notes:
+  - Added `src/PaymentGateways/Ecpay.php` implementing hosted checkout redirect (`process()`), callback verification (`verifyCallback()`), and idempotent callback mutation (`notify()`).
+  - Added frontend auto-submit view `resources/views/frontend/payment_gateways/ecpay-redirect.blade.php` for ECPay form-post checkout initiation.
+  - Added default gateway records in `database/seeders/PaymentGatewaySeeder.php`: `ecpay` (live) and `ecpay_stage` (sandbox), both using driver `ecpay`.
+  - Added ECPay credential mapping hint to backend gateway form and package locales (`client_id=MerchantID`, `client_secret=HashKey`, `webhook_secret=HashIV`).
+  - Extended `tests/Feature/GatewayVerificationTest.php` with valid/invalid ECPay `CheckMacValue` verification tests.
+  - Updated operational docs (`README`, `payment-lifecycle`, `operations-runbook`, `test-matrix`, `release-checklist`, `CHANGELOG`) to include ECPay flow and verification requirements.
+  - Verification commands:
+    - `php -l src/PaymentGateways/Ecpay.php`
+    - `php -l database/seeders/PaymentGatewaySeeder.php`
+    - `php -l tests/Feature/GatewayVerificationTest.php`
+    - `php -l lang/en/word.php lang/zh_TW/word.php lang/zh_CN/word.php lang/ja/word.php`
 - Blocker:
   - none
