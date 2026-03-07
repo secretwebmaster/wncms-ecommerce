@@ -35,7 +35,7 @@ Purpose: this is the shared execution board for production hardening of `secretw
 | EC3 | Additive migration strategy for backward-compatible upgrades | P0 | yes | completed | codex | 2026-03-06T12:17:47Z | 2026-03-06T12:19:49Z | EC1 |
 | EC4 | Gateway config validation + secret handling hardening | P1 | yes | completed | codex | 2026-03-06T12:20:10Z | 2026-03-06T12:22:47Z | EC1 |
 | EC5 | Renewal grace/suspension/reactivation state machine | P1 | yes | completed | codex | 2026-03-06T12:23:10Z | 2026-03-06T12:25:13Z | EC2, EC3 |
-| EC6 | Automated test matrix + CI release gate | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4 |
+| EC6 | Automated test matrix + CI release gate | P0 | yes | completed | codex | 2026-03-06T12:25:34Z | 2026-03-06T12:28:38Z | EC1, EC2, EC3, EC4 |
 | EC7 | Observability, reconciliation, and failure runbook | P1 | yes | todo | - | - | - | EC6 |
 | EC8 | Composer release packaging + upgrade guide + RC checklist | P0 | yes | todo | - | - | - | EC1, EC2, EC3, EC4, EC5, EC6, EC7 |
 
@@ -156,7 +156,14 @@ Purpose: this is the shared execution board for production hardening of `secretw
 - Acceptance:
   - Required suite passes in CI and blocks release on failure.
 - Verification notes:
-  - pending
+  - Added package test scaffold: `phpunit.xml.dist`, `tests/TestCase.php`, `tests/Feature/GatewayVerificationTest.php`.
+  - Added CI workflow gate: `.github/workflows/package-ci.yml` (install, lint, run tests).
+  - Added composer test script + dev dependencies (`phpunit`, `orchestra/testbench`) and autoload-dev mapping.
+  - Added explicit test matrix doc: `documentations/test-matrix.md`.
+  - Updated README docs index + testing command section.
+  - Local verification:
+    - `php -l` passed on test files.
+    - `COMPOSER_ALLOW_SUPERUSER=1 composer test` failed in current workspace because package-level `vendor/bin/phpunit` is not installed yet.
 - Blocker:
   - none
 

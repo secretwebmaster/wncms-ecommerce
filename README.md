@@ -16,6 +16,7 @@
 - `documentations/production-readiness-design.md`
 - `documentations/to-do.md`
 - `documentations/upgrade-guide.md`
+- `documentations/test-matrix.md`
 
 ## Installation
 
@@ -29,6 +30,12 @@ composer require secretwebmaster/wncms-ecommerce
 php artisan wncms-ecommerce:pay-order {orderSlug} {paymentGatewaySlug}
 php artisan wncms-ecommerce:renew-subscriptions
 php artisan wncms-ecommerce:advance-subscriptions
+```
+
+## Testing
+
+```bash
+composer test
 ```
 
 ## Design Goal

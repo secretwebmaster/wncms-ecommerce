@@ -13,10 +13,19 @@
     "require": {
         "secretwebmaster/wncms-core": "^6.0"
     },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.5"
+    },
     "autoload": {
         "psr-4": {
             "Secretwebmaster\\WncmsEcommerce\\": "src/",
             "Secretwebmaster\\WncmsEcommerce\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Secretwebmaster\\WncmsEcommerce\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -27,5 +36,8 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist"
+    }
 }
